@@ -7,6 +7,7 @@ Reads your content from content.py, drops it into templates/page.html, and
 writes out the two files GitHub Pages actually serves:
 
     index.html            the whole site
+    ibm-courses.html      the courses page, opened from the IBM certificate
     assistant-config.js   the chatbot's knowledge and starter questions
 
 You should not need to edit this file to change what the site says. Edit
@@ -20,12 +21,14 @@ import json
 import re
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 import content as C
 
 ROOT = Path(__file__).parent
 TEMPLATE = ROOT / "templates" / "page.html"
 OUT_HTML = ROOT / "index.html"
+OUT_COURSES = ROOT / C.COURSES_PAGE["file"]
 OUT_CONFIG = ROOT / "assistant-config.js"
 
 VERIFY_BASE = "https://coursera.org/verify/"
@@ -102,27 +105,33 @@ def section_head(kicker, title_html=None, subtitle=None, style=""):
 # Section renderers
 # --------------------------------------------------------------------------
 
-def render_nav():
+def render_nav(home=""):
+    """home is "" on the home page. Other pages pass "./" so the section links
+    lead back to the home page instead of looking for sections on their own."""
     logo = C.NAV["logo"]
+
+    def href(h):
+        return home + h if home and h.startswith("#") else h
+
     links = "\n".join(
-        f'      <a href="{esc(l["href"])}">{esc(l["label"])}</a>'
+        f'      <a href="{esc(href(l["href"]))}">{esc(l["label"])}</a>'
         for l in C.NAV["links"]
     )
     cta = C.NAV["cta"]
     mobile_items = list(C.NAV["links"]) + [C.NAV["mobile_extra"]]
     mobile = "\n".join(
-        f'  <a href="{esc(m["href"])}">{esc(m["label"])}</a>' for m in mobile_items
+        f'  <a href="{esc(href(m["href"]))}">{esc(m["label"])}</a>' for m in mobile_items
     )
-    aria = f'{logo["name"]} {logo["suffix"]}, back to top'
+    aria = f'{logo["name"]} {logo["suffix"]}, ' + ("home page" if home else "back to top")
     return f"""<!-- ============ NAV ============ -->
 <header class="nav" id="nav">
   <div class="container nav-inner">
-    <a class="logo" href="#top" aria-label="{esc(aria)}">
+    <a class="logo" href="{esc(home or "#top")}" aria-label="{esc(aria)}">
       <span class="dc">{esc(logo["name"])}</span><span class="dot">.</span><span class="pf">{esc(logo["suffix"])}</span>
     </a>
     <nav class="nav-links" aria-label="Primary">
 {links}
-      <a href="{esc(cta["href"])}" class="nav-cta">{esc(cta["label"])}</a>
+      <a href="{esc(href(cta["href"]))}" class="nav-cta">{esc(cta["label"])}</a>
     </nav>
     <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
@@ -224,6 +233,139 @@ def render_about():
 </section>"""
 
 
+def _hex_rgb(value):
+    """'#4C8DFF' -> '76,141,255', so CSS can build translucent glows from it."""
+    h = value.lstrip("#")
+    if not re.fullmatch(r"[0-9a-fA-F]{6}", h):
+        sys.exit(f"build error: accent '{value}' must be a 6-digit hex color like #4C8DFF")
+    return ",".join(str(int(h[i:i + 2], 16)) for i in (0, 2, 4))
+
+
+def _slug(text):
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+
+
+def _initials(title):
+    """'Desktop Manager' -> 'DM', 'JobFinder' -> 'JF', 'Atlas' -> 'AT'."""
+    words = title.split()
+    if len(words) > 1:
+        return (words[0][0] + words[1][0]).upper()
+    caps = [ch for ch in title if ch.isupper()]
+    return ("".join(caps[:2]) if len(caps) >= 2 else title[:2]).upper()
+
+
+def _url(path):
+    """Percent-encode a relative path (spaces in file names) but keep / and #."""
+    return quote(path, safe="/#?=&")
+
+
+ARROW_RIGHT_SVG = (
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" '
+    'stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+    'stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>'
+)
+
+
+def render_projects():
+    s = C.PROJECTS_SECTION
+    projects = C.PROJECTS
+    for p in projects:
+        page = ROOT / p["page"].split("#")[0]
+        if not page.exists():
+            sys.exit(f"build error: project '{p['title']}' points at {p['page']}, which does not exist")
+        if p.get("icon") and not (ROOT / p["icon"]).exists():
+            sys.exit(f"build error: project '{p['title']}' icon {p['icon']} does not exist")
+
+    categories = []
+    for p in projects:
+        if p["category"] not in categories:
+            categories.append(p["category"])
+    show_filters = len(projects) >= 3 and len(categories) >= 2
+    # Cards sit two per row. A featured card takes a whole row, which only looks
+    # right when the projects after it pair up; otherwise it renders like the rest.
+    use_featured = (len(projects) - 1) % 2 == 0
+
+    filters = ""
+    if show_filters:
+        buttons = ['      <button class="proj-filter active" data-filter="all">All '
+                   f'<span>{len(projects)}</span></button>']
+        for cat in categories:
+            n = sum(1 for p in projects if p["category"] == cat)
+            buttons.append(f'      <button class="proj-filter" data-filter="{_slug(cat)}">'
+                           f'{esc(cat)} <span>{n}</span></button>')
+        filters = ('    <div class="proj-filters" data-reveal role="group" aria-label="Filter projects">\n'
+                   + "\n".join(buttons) + "\n    </div>\n")
+
+    cards = []
+    for p in projects:
+        if p.get("icon"):
+            mark = f'<img class="proj-icon" src="{esc(_url(p["icon"]))}" alt="" loading="lazy">'
+        else:
+            initials = _initials(p["title"])
+            mark = f'<span class="proj-mono">{esc(initials)}</span>'
+        facts = ""
+        if p.get("metrics"):
+            facts += ('<dl class="proj-metrics">' + "".join(
+                f'<div><dt>{esc(v)}</dt><dd>{esc(label)}</dd></div>' for v, label in p["metrics"][:3]
+            ) + "</dl>")
+        if p.get("features"):
+            facts += ('<ul class="proj-feats" aria-label="Features">'
+                      + "".join(f"<li>{esc(f)}</li>" for f in p["features"]) + "</ul>")
+        if facts:
+            facts = f'<div class="proj-facts">{facts}</div>'
+        stack = "".join(f"<li>{esc(t)}</li>" for t in p["stack"])
+        status = (f'<span class="proj-status"><i></i>{esc(p["status"])}</span>'
+                  if p.get("status") else "")
+        preview = _url(p.get("preview") or p["page"])
+        cls = "proj-card is-featured" if p.get("featured") and use_featured else "proj-card"
+        cards.append(f"""      <article class="{cls}" data-cat="{_slug(p["category"])}" style="--pa:{esc(p["accent"])};--pa-rgb:{_hex_rgb(p["accent"])}" data-reveal>
+       <div class="proj-tilt">
+        <div class="proj-media" data-preview="{esc(preview)}">
+          <div class="proj-cover" aria-hidden="true"><span class="proj-blob"></span><span class="proj-blob b2"></span>{mark}</div>
+          {status}
+          <span class="proj-live" aria-hidden="true"><i></i>Live preview</span>
+        </div>
+        <div class="proj-body">
+          <div class="proj-meta"><span class="proj-cat">{esc(p["category"])}</span><span>{esc(p.get("year", ""))}</span></div>
+          <h3 class="proj-title"><a class="proj-link" href="{esc(_url(p["page"]))}">{esc(p["title"])}</a></h3>
+          <p class="proj-tagline">{esc(p["tagline"])}</p>
+          <p class="proj-desc">{esc(p["description"])}</p>
+          {facts}
+          <ul class="proj-stack" aria-label="Built with">{stack}</ul>
+          <span class="proj-cta" aria-hidden="true">Open the interactive demo {ARROW_RIGHT_SVG}</span>
+        </div>
+       </div>
+      </article>""")
+
+    count = f'<span class="proj-count">{len(projects):02d}</span>'
+    head = section_head(s["kicker"], s["title_html"], s.get("subtitle"))
+    head = head.replace(f'{esc(s["kicker"])}</div>', f'{esc(s["kicker"])} {count}</div>', 1)
+    return f"""<!-- ============ PROJECTS ============ -->
+<section class="section section-projects" id="projects">
+  <div class="proj-backdrop" aria-hidden="true"></div>
+  <div class="container">
+{head}
+{filters}    <div class="proj-grid" id="projGrid">
+{chr(10).join(cards)}
+    </div>
+  </div>
+</section>"""
+
+
+def projects_for_assistant():
+    """A plain-prose summary of the projects, appended to the chatbot's prompt so
+    it can answer "what has he built?" without anyone retyping it."""
+    parts = []
+    for p in C.PROJECTS:
+        feats = f" Features: {', '.join(p['features'])}." if p.get("features") else ""
+        parts.append(
+            f"{p['title']} ({p['category']}, {p.get('status', 'project')}): {p['tagline']} "
+            f"{p['description']}{feats} Built with {', '.join(p['stack'])}."
+        )
+    return ("PROJECTS (each has an interactive demo page in the Projects section of "
+            "the portfolio): " + " ".join(parts))
+
+
 def render_credentials():
     s = C.CREDENTIALS_SECTION
     cards = []
@@ -233,18 +375,25 @@ def render_credentials():
             f'{esc(t["label"])}</span>'
             for t in c["tags"]
         )
-        cards.append(f"""      <article class="cred-card" data-reveal>
+        title = esc(c["title"])
+        cta = ""
+        if c.get("link"):
+            title = f'<a class="cred-link" href="{esc(_url(c["link"]))}">{title}</a>'
+            cta = (f'\n          <span class="cred-cta" aria-hidden="true">'
+                   f'{esc(c.get("link_label", "Open"))} {ARROW_RIGHT_SVG}</span>')
+        cls = "cred-card has-link" if c.get("link") else "cred-card"
+        cards.append(f"""      <article class="{cls}" data-reveal>
         <div class="cred-img"><img src="{esc(c["image"])}" alt="{esc(c["alt"])}" loading="lazy"></div>
         <div class="cred-body">
           <div class="cred-tags">{tags}</div>
-          <h3 class="cred-title">{esc(c["title"])}</h3>
+          <h3 class="cred-title">{title}</h3>
           <p class="cred-desc">
             {esc(c["description"])}
           </p>
           <div class="cred-meta">
             <span>{esc(c["issuer"])}</span>
             <span class="code">{esc(c["code"])}</span>
-          </div>
+          </div>{cta}
         </div>
       </article>""")
     return f"""<!-- ============ FEATURED CREDENTIALS ============ -->
@@ -254,6 +403,35 @@ def render_credentials():
     <div class="featured-grid">
 {chr(10).join(cards)}
     </div>
+  </div>
+</section>"""
+
+
+def render_courses_hero():
+    """The top of the courses page: the certificate the courses belong to."""
+    pg = C.COURSES_PAGE
+    cred = next((c for c in C.CREDENTIALS if c.get("link") == pg["file"]), None)
+    if cred is None:
+        sys.exit(f"build error: no credential has \"link\": \"{pg['file']}\", so "
+                 "nothing on the home page opens the courses page")
+    verify = f"{VERIFY_BASE}{cred['code']}"
+    return f"""<!-- ============ CERTIFICATE ============ -->
+<section class="cpage-hero">
+  <div class="hero-bg"><div class="hero-grid"></div><div class="orb orb-1"></div></div>
+  <div class="container cpage-grid">
+    <div class="cpage-text" data-reveal>
+      <a class="cpage-back" href="./#credentials">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        {esc(pg["back_label"])}</a>
+      <div class="section-kicker">{esc(cred["issuer"])}</div>
+      <h1 class="cpage-title">{esc(cred["title"])}</h1>
+      <p class="cpage-desc">{esc(cred["description"])}</p>
+      <a class="btn btn-ghost" href="{esc(verify)}" target="_blank" rel="noopener">
+        {SHIELD_SVG}
+        Verify {esc(cred["code"])}
+      </a>
+    </div>
+    <div class="cpage-cert" data-reveal><img src="{esc(cred["image"])}" alt="{esc(cred["alt"])}"></div>
   </div>
 </section>"""
 
@@ -428,46 +606,55 @@ def build_assistant_config():
         "// Change the assistant in content.py (the ASSISTANT section),\n"
         "// then run:  python build.py\n\n"
         f"export const suggestions = {json.dumps(a['suggestions'], indent=2)};\n\n"
-        f"export const profile = {json.dumps(a['prompt'])};\n"
+        f"export const profile = {json.dumps(a['prompt'] + chr(10) * 2 + projects_for_assistant())};\n"
     )
+
+
+def fill(page, replacements):
+    for key, value in replacements.items():
+        page = page.replace(f"<!--{{{key}}}-->", value)
+    leftover = re.findall(r"<!--\{[A-Z_]+\}-->", page)
+    if leftover:
+        sys.exit(f"build error: template placeholders were not filled: {leftover}")
+    return page
 
 
 def main():
     if not TEMPLATE.exists():
         sys.exit(f"build error: missing template at {TEMPLATE}")
 
-    page = TEMPLATE.read_text(encoding="utf-8")
-
-    replacements = {
-        "TITLE": esc(C.SITE["title"]),
-        "DESCRIPTION": esc(C.SITE["description"]),
+    template = TEMPLATE.read_text(encoding="utf-8")
+    shared = {
         "OG_DESCRIPTION": esc(C.SITE["og_description"]),
         "FAVICON_INITIALS": esc(C.SITE["favicon_initials"]),
         "CHAT_URL": C.SITE["chat_url"],
         "FALLBACK_SUGGESTIONS": json.dumps(C.ASSISTANT["suggestions"]),
-        "NAV": render_nav(),
-        "HERO": render_hero(),
-        "MARQUEE": render_marquee(),
-        "ABOUT": render_about(),
-        "CREDENTIALS": render_credentials(),
-        "COURSES": render_courses(),
-        "SKILLS": render_skills(),
-        "CONTACT": render_contact(),
         "FOOTER": render_footer(),
         "CHAT_WIDGET": render_chat_widget(),
     }
 
-    for key, value in replacements.items():
-        page = page.replace(f"<!--{{{key}}}-->", value)
+    home = fill(template, dict(shared, **{
+        "TITLE": esc(C.SITE["title"]),
+        "DESCRIPTION": esc(C.SITE["description"]),
+        "NAV": render_nav(),
+        "MAIN": "\n".join([
+            render_hero(), render_marquee(), render_about(), render_projects(),
+            render_credentials(), render_skills(), render_contact(),
+        ]),
+    }))
+    courses = fill(template, dict(shared, **{
+        "TITLE": esc(C.COURSES_PAGE["title"]),
+        "DESCRIPTION": esc(C.COURSES_PAGE["description"]),
+        "NAV": render_nav(home="./"),
+        "MAIN": "\n".join([render_courses_hero(), render_courses()]),
+    }))
 
-    leftover = re.findall(r"<!--\{[A-Z_]+\}-->", page)
-    if leftover:
-        sys.exit(f"build error: template placeholders were not filled: {leftover}")
-
-    OUT_HTML.write_text(page, encoding="utf-8", newline="\n")
+    OUT_HTML.write_text(home, encoding="utf-8", newline="\n")
+    OUT_COURSES.write_text(courses, encoding="utf-8", newline="\n")
     OUT_CONFIG.write_text(build_assistant_config(), encoding="utf-8", newline="\n")
 
-    print(f"wrote {OUT_HTML.name}  ({len(page):,} chars)")
+    print(f"wrote {OUT_HTML.name}  ({len(home):,} chars)")
+    print(f"wrote {OUT_COURSES.name}  ({len(courses):,} chars)")
     print(f"wrote {OUT_CONFIG.name}")
     print(
         f"  {len(C.CREDENTIALS)} credentials, {len(C.COURSES)} courses, "

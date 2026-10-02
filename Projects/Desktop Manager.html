@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desktop Manager | DanielC Portfolio</title>
+<meta name="description" content="Desktop Manager: a Windows app that remembers a desktop icon layout for every display setup and restores it when monitors change. C#, .NET 10, WPF.">
+<link rel="icon" href="assets/desktop-manager/app-icon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  // #preview renders only the live demo, full-bleed. The portfolio's project
+  // cards load this page in a scaled iframe as a moving thumbnail.
+  if (location.hash === '#preview') document.documentElement.classList.add('preview');
+  document.documentElement.classList.add('js');
+</script>
+<style>
+/* ===================================================================
+   Tokens: the portfolio's palette (cream #FAF7F2, slate navy #1E293B,
+   beige #DDB892, terracotta #C05621, sage #84A98C) plus a steel blue
+   #2F6B9A for the app's own details: section labels, step numbers,
+   icons, zones and progress. Terracotta stays the call-to-action color.
+   --blue-lt is the same blue lifted for use on the dark monitor screens.
+   =================================================================== */
+:root{
+  --bg:#FAF7F2; --bg2:#F3ECE2; --surface:#FFFFFF; --surface2:#F7F2EA;
+  --glass:rgba(255,255,255,.72); --line:rgba(30,41,59,.10); --line2:rgba(30,41,59,.20);
+  --text:#1E293B; --muted:#4F5B6E; --muted2:#8A929F;
+  --navy:#1E293B; --beige:#DDB892; --cta:#C05621;
+  --blue:#2F6B9A; --blue2:#285C86; --blue-lt:#8FB3D1; --brand:#2F6B9A;
+  --red:#C05621; --green:#557A5E; --amber:#A86A2C;
+  --ink:#141C2A;
+  --blue-dim:rgba(47,107,154,.10); --red-dim:rgba(192,86,33,.10); --green-dim:rgba(132,169,140,.20); --amber-dim:rgba(221,184,146,.30);
+  --stage:#ECE3D6;
+  --shadow:0 40px 80px -44px rgba(30,41,59,.45);
+  --font:"Segoe UI Variable Text","Segoe UI",-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+  --font-d:"Segoe UI Variable Display","Segoe UI",-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--font);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--blue);text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:28px}
+::selection{background:var(--brand);color:#fff}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:8px}
+
+/* ---------- top bar ---------- */
+.top{position:fixed;inset:0 0 auto;z-index:50;height:64px;display:flex;align-items:center;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
+.top.scrolled{background:rgba(250,247,242,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:var(--line)}
+.top .wrap{display:flex;align-items:center;gap:20px;width:100%}
+.back{display:inline-flex;align-items:center;gap:8px;font:500 13.5px var(--mono);color:var(--muted);padding:8px 12px 8px 8px;border-radius:10px;transition:color .2s,background .2s}
+.back:hover{color:var(--text);background:var(--glass)}
+.back svg{transition:transform .2s}.back:hover svg{transform:translateX(-3px)}
+.logo{font:600 16px var(--mono);color:var(--text);letter-spacing:-.02em}
+.logo span{color:#C05621}.logo em{color:var(--muted);font-style:normal;font-weight:400}
+.top nav{margin-left:auto;display:flex;gap:4px}
+.top nav a{font:500 13px var(--mono);color:var(--muted);padding:8px 12px;border-radius:8px;transition:color .2s,background .2s}
+.top nav a:hover{color:var(--text);background:var(--glass)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding:150px 0 70px;overflow:hidden;text-align:center;background:linear-gradient(180deg,#F2E3D0 0%,#F6ECDF 55%,var(--bg) 100%)}
+.bloom{position:absolute;inset:-20% -10% auto;height:900px;pointer-events:none;
+  background:
+    radial-gradient(40% 50% at 50% 30%,rgba(47,107,154,.20),transparent 70%),
+    radial-gradient(30% 40% at 22% 55%,rgba(221,184,146,.55),transparent 70%),
+    radial-gradient(26% 34% at 80% 50%,rgba(132,169,140,.25),transparent 70%);
+  filter:blur(10px);animation:breathe 14s ease-in-out infinite alternate}
+@keyframes breathe{to{transform:scale(1.08) translateY(20px)}}
+.hero-grid{position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:64px 64px;mask-image:radial-gradient(ellipse 75% 65% at 50% 35%,#000 25%,transparent 78%);-webkit-mask-image:radial-gradient(ellipse 75% 65% at 50% 35%,#000 25%,transparent 78%);opacity:.75}
+.hero-in{position:relative;display:flex;flex-direction:column;align-items:center}
+.hero-icon{width:132px;height:132px;border-radius:30px;margin-bottom:30px;position:relative;transform-style:preserve-3d;transition:transform .25s ease-out;animation:float 6s ease-in-out infinite}
+.hero-icon img{width:100%;height:100%;border-radius:30px;box-shadow:0 30px 60px -18px rgba(47,107,154,.6),0 0 0 1px rgba(30,41,59,.08)}
+.hero-icon::after{content:"";position:absolute;inset:-28px;border-radius:50%;background:radial-gradient(circle,rgba(47,107,154,.25),transparent 65%);z-index:-1;filter:blur(8px)}
+@keyframes float{50%{translate:0 -10px}}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font:500 12.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cta);border:1px solid rgba(192,86,33,.3);background:rgba(192,86,33,.07);padding:7px 16px;border-radius:999px;margin:0 0 22px}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--cta);box-shadow:0 0 0 0 rgba(192,86,33,.5);animation:ping 2.2s infinite}
+@keyframes ping{60%{box-shadow:0 0 0 7px rgba(192,86,33,0)}}
+h1{font:700 clamp(46px,8vw,92px)/1.1 var(--font-d);letter-spacing:-.035em;margin:0 0 18px;padding-bottom:.06em;
+  background:linear-gradient(180deg,var(--text) 35%,var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{max-width:680px;font-size:clamp(16.5px,1.8vw,19px);color:var(--muted);margin:0 0 34px}
+.lead strong{color:var(--text);font-weight:600}
+.cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:34px}
+.btn{display:inline-flex;align-items:center;gap:9px;font:600 14.5px var(--font);padding:13px 24px;border-radius:12px;cursor:pointer;border:1px solid transparent;transition:transform .2s,box-shadow .25s,background .2s,border-color .2s}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--cta);color:#fff;box-shadow:0 10px 30px -12px rgba(192,86,33,.7)}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 16px 40px -12px rgba(192,86,33,.8);color:#fff}
+.btn-g{background:var(--glass);color:var(--text);border-color:var(--line2)}
+.btn-g:hover{border-color:var(--blue);transform:translateY(-2px)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;list-style:none;padding:0;margin:0}
+.chips li{font:500 12.5px var(--mono);color:var(--muted);border:1px solid var(--line);background:var(--glass);padding:6px 13px;border-radius:999px}
+.hero-flow{position:relative;margin:72px auto 0;max-width:1120px;padding:30px 32px 32px;text-align:left;border:1px solid var(--line);border-radius:24px;
+  background:rgba(255,255,255,.78);box-shadow:0 26px 50px -34px rgba(30,41,59,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.hero-flow-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px 24px;flex-wrap:wrap;margin-bottom:26px}
+.hero-flow-h .kicker{margin:0}
+.hero-flow-h p{margin:0;font-size:14.5px;color:var(--muted)}
+
+/* ---------- sections ---------- */
+.sec{padding:100px 0;position:relative}
+.sec-alt{background:var(--bg2);border-block:1px solid var(--line)}
+.sec-head{max-width:720px;margin-bottom:46px}
+.sec-head.c{margin-inline:auto;text-align:center}
+.kicker{font:600 12.5px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--blue2);margin:0 0 14px;display:flex;align-items:center;gap:12px}
+.sec-head.c .kicker{justify-content:center}
+.kicker::before{content:"";width:28px;height:1px;background:currentColor}
+h2{font:700 clamp(30px,4.4vw,48px)/1.06 var(--font-d);letter-spacing:-.025em;margin:0}
+.sub{color:var(--muted);font-size:17px;margin:16px 0 0}
+.sub b{color:var(--text);font-weight:600}
+
+/* ===================================================================
+   LIVE DEMO
+   The desk is a "world" in logical pixels (the same units Windows uses),
+   scaled by a camera that fits whichever monitors are connected.
+   =================================================================== */
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.demo-top{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.demo-id{display:flex;align-items:center;gap:10px;font:600 14.5px var(--font)}
+.demo-id img{width:26px;height:26px;border-radius:7px}
+.demo-id small{font:400 12px var(--mono);color:var(--muted2)}
+.run{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font:500 12px var(--mono);color:var(--muted);padding:6px 12px;border:1px solid var(--line);border-radius:999px}
+.run i{width:7px;height:7px;border-radius:50%;background:#84A98C;animation:ping2 2s infinite}
+@keyframes ping2{0%{box-shadow:0 0 0 0 rgba(132,169,140,.7)}70%,100%{box-shadow:0 0 0 7px rgba(132,169,140,0)}}
+.demo[data-state="paused"] .run i{background:var(--amber);animation:none}
+.demo[data-state="manual"] .run i{background:var(--blue);animation:none}
+.dbtns{display:flex;gap:6px}
+.dbtn{font:500 12.5px var(--font);color:var(--text);background:var(--glass);border:1px solid var(--line2);padding:7px 13px;border-radius:9px;cursor:pointer;transition:border-color .2s,background .2s}
+.dbtn:hover{border-color:var(--blue)}
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.step{position:relative;display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px 15px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font:500 13px var(--font);transition:border-color .25s,background .25s,color .25s}
+.step:hover{color:var(--text);border-color:var(--line2)}
+.step.cur{color:var(--text);border-color:rgba(47,107,154,.45);background:var(--blue-dim)}
+.step-n{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 11.5px var(--mono);border:1px solid var(--line2)}
+.step.cur .step-n{background:var(--blue);border-color:var(--blue);color:#fff}
+.step-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step-bar{position:absolute;left:12px;right:12px;bottom:6px;height:3px;border-radius:2px;background:var(--line);overflow:hidden}
+.step-bar i{display:block;height:100%;width:100%;transform-origin:0 50%;transform:scaleX(var(--p,0));background:linear-gradient(90deg,var(--brand),var(--blue-lt));border-radius:inherit}
+
+.demo-body{display:grid;grid-template-columns:minmax(0,1fr) 300px}
+.stage{position:relative;aspect-ratio:16/10;overflow:hidden;user-select:none;-webkit-user-select:none;
+  background:radial-gradient(70% 60% at 50% 40%,rgba(47,107,154,.08),transparent 70%),var(--stage)}
+.stage::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(rgba(30,41,59,.10) 1px,transparent 1px);background-size:22px 22px}
+
+.world{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform 1.15s cubic-bezier(.65,0,.25,1)}
+.mon{position:absolute;opacity:0;transform:scale(.93);transition:opacity .55s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.mon.on{opacity:1;transform:none}
+.mon::before{content:"";position:absolute;inset:-22px;border-radius:46px;background:linear-gradient(170deg,#334158,#141C2A 60%);box-shadow:0 50px 90px -30px rgba(30,41,59,.6),inset 0 0 0 3px rgba(255,255,255,.06)}
+.mon-scr{position:absolute;inset:0;border-radius:22px;overflow:hidden;transition:filter .4s;
+  background:
+    radial-gradient(60% 75% at 18% 105%,rgba(47,107,154,.95),transparent 62%),
+    radial-gradient(55% 70% at 88% -8%,rgba(221,184,146,.55),transparent 60%),
+    radial-gradient(40% 50% at 60% 60%,rgba(143,179,209,.28),transparent 70%),
+    linear-gradient(160deg,#24456A,#111B2B)}
+.mon.alt .mon-scr{background:
+    radial-gradient(60% 75% at 18% 105%,rgba(192,86,33,.85),transparent 62%),
+    radial-gradient(55% 70% at 88% -8%,rgba(221,184,146,.75),transparent 60%),
+    radial-gradient(40% 50% at 70% 70%,rgba(132,169,140,.35),transparent 70%),
+    linear-gradient(160deg,#3A2016,#170C08)}
+.mon-ns{position:absolute;inset:0;display:grid;place-items:center;background:#000;color:rgba(255,255,255,.55);font:600 84px var(--font-d);opacity:0;transition:opacity .25s}
+.mon.ns .mon-ns{opacity:1}
+.mon-lbl{position:absolute;left:36px;bottom:32px;display:flex;flex-direction:column;gap:10px;padding:20px 32px;border-radius:30px;color:#fff;background:rgba(15,22,34,.55);white-space:nowrap;transition:box-shadow .3s}
+.mon-lbl b{font:600 60px/1 var(--font)}
+.mon-lbl small{font:500 34px/1 var(--mono);color:rgba(255,255,255,.7);transition:color .3s}
+.mon.flash .mon-lbl{box-shadow:0 0 0 8px #8FB3D1,0 0 90px 10px rgba(143,179,209,.8)}
+.mon.flash .mon-lbl small{color:#fff}
+.mon-base{position:absolute;left:-110px;right:-110px;top:calc(100% + 22px);height:70px;
+  background:linear-gradient(#3A4760,#1A2333);clip-path:polygon(5% 0,95% 0,100% 100%,0 100%)}
+.mon-base::after{content:"";position:absolute;left:43%;right:43%;top:0;height:14px;background:#141C2A;border-radius:0 0 14px 14px}
+
+.obj{position:absolute;left:0;top:0;transition:transform .95s cubic-bezier(.3,1.15,.4,1),width .95s cubic-bezier(.3,1.1,.4,1),height .95s cubic-bezier(.3,1.1,.4,1)}
+.zone{z-index:2;border-radius:36px;background:rgba(47,107,154,.2);border:5px solid rgba(143,179,209,.6)}
+.zone-t{position:absolute;left:34px;top:-30px;font:700 42px/1 var(--font);color:#fff;background:#2F6B9A;padding:12px 26px;border-radius:999px;box-shadow:0 10px 30px -8px rgba(47,107,154,.9)}
+.clk{z-index:4;border-radius:44px;background:rgba(8,11,20,.6);border:4px solid rgba(255,255,255,.14);box-shadow:0 30px 60px -24px rgba(0,0,0,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;overflow:hidden}
+.clk-t{font:650 var(--fs,140px)/1 var(--font-d);letter-spacing:-.03em}
+.clk-d{font:500 calc(var(--fs,140px)*.27)/1.4 var(--font);color:rgba(255,255,255,.66)}
+
+.ic{position:absolute;left:0;top:0;z-index:3;width:200px;height:200px;display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:12px;cursor:grab;touch-action:none;
+  transition:transform .95s cubic-bezier(.3,1.25,.4,1)}
+.ic-t{width:136px;height:136px;flex:none;border-radius:38px;display:grid;place-items:center;
+  background:linear-gradient(150deg,var(--c2),var(--c1));box-shadow:0 18px 30px -12px rgba(0,0,0,.7),inset 0 3px 0 rgba(255,255,255,.28);transition:transform .2s,filter .2s,box-shadow .2s}
+.ic-t svg{width:72px;height:72px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic-l{font:600 34px/1.1 var(--font);color:#fff;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.85);white-space:nowrap;transition:opacity .35s}
+.stage[data-zoom="far"] .ic-l{opacity:0}
+.ic:hover .ic-t{filter:brightness(1.15)}
+.ic.dragging{z-index:20;cursor:grabbing;transition:none}
+.ic.dragging .ic-t{transform:scale(1.14);box-shadow:0 40px 60px -16px rgba(0,0,0,.85),0 0 0 6px rgba(143,179,209,.75)}
+.ic.dragging .ic-l{opacity:1}
+.ghost{position:absolute;left:0;top:0;z-index:1;border:6px dashed rgba(143,179,209,.9);border-radius:34px;background:rgba(47,107,154,.18);opacity:0;transition:opacity .15s}
+.ghost.on{opacity:1}
+.stage.instant .world,.stage.instant .mon,.stage.instant .ic,.stage.instant .obj{transition:none!important}
+
+/* overlays live in screen pixels, outside the scaled world */
+.cap{position:absolute;top:14px;left:50%;z-index:20;display:flex;align-items:center;gap:9px;max-width:calc(100% - 28px);padding:7px 14px 7px 7px;border-radius:999px;
+  background:rgba(30,41,59,.92);border:1px solid rgba(221,184,146,.25);color:#fff;font-size:13px;white-space:nowrap;
+  opacity:0;transform:translate(-50%,-8px);transition:opacity .35s,transform .35s;pointer-events:none}
+.cap.on{opacity:1;transform:translate(-50%,0)}
+.cap b{flex:none;font:600 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px}
+.cap span{overflow:hidden;text-overflow:ellipsis}
+.cap[data-k="win"] b{background:rgba(192,86,33,.28);color:#F2A57E}
+.cap[data-k="dm"] b{background:rgba(143,179,209,.22);color:#BBD3E8}
+.cap[data-k="ok"] b{background:rgba(132,169,140,.28);color:#BCD7C1}
+.settle,.hint{position:absolute;left:14px;bottom:14px;z-index:20;display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;
+  background:rgba(30,41,59,.92);border:1px solid rgba(221,184,146,.25);color:#fff;font-size:12.5px;opacity:0;transform:translateY(8px);transition:opacity .3s,transform .3s;pointer-events:none}
+.settle.on,.hint.on{opacity:1;transform:none}
+.settle u{position:relative;width:110px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden;text-decoration:none}
+.settle u i{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(0);background:#8FB3D1}
+.settle.on u i{animation:fill 2.5s linear forwards}
+.demo[data-paused="true"] .settle u i{animation-play-state:paused}
+@keyframes fill{to{transform:scaleX(1)}}
+.hint svg{flex:none;color:#DDB892}
+.prompt{position:absolute;left:50%;bottom:16px;z-index:25;width:min(450px,calc(100% - 28px));display:grid;grid-template-columns:44px minmax(0,1fr);gap:2px 12px;padding:14px 14px 12px;
+  background:#fff;color:#1E293B;border-radius:16px;box-shadow:0 30px 70px -14px rgba(30,41,59,.55),0 0 0 1px rgba(30,41,59,.08);
+  opacity:0;transform:translate(-50%,18px) scale(.98);pointer-events:none;transition:opacity .4s,transform .45s cubic-bezier(.2,.9,.2,1.15)}
+.prompt.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.prompt img{width:44px;height:44px;border-radius:11px;grid-row:span 2}
+.prompt b{font:600 14.5px var(--font)}
+.prompt p{margin:0;font-size:13px;line-height:1.45;color:#4F5B6E}
+.prompt p em{font-style:normal;font-weight:600;color:#2F6B9A}
+.pr-bt{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+.pr-bt button{font:600 13px var(--font);border:0;border-radius:9px;padding:9px 15px;cursor:pointer;transition:transform .15s,background .15s}
+.pr-yes{background:#2F6B9A;color:#fff}.pr-yes:hover,.pr-yes.press{background:#245578}
+.pr-yes.press{transform:scale(.94)}
+.pr-no{background:#F3ECE2;color:#1E293B}.pr-no:hover{background:#EADFCF}
+.cut{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:#141C2A;color:#FAF7F2;font:600 clamp(15px,2vw,20px) var(--font-d);letter-spacing:-.01em;opacity:0;pointer-events:none;transition:opacity .42s}
+.cut.on{opacity:1}
+
+.side{position:relative;border-left:1px solid var(--line);min-width:0}
+.side-in{position:absolute;inset:0;display:flex;flex-direction:column}
+.side-sec{padding:12px 14px;border-bottom:1px solid var(--line)}
+.side-h{display:flex;justify-content:space-between;align-items:center;font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px}
+.side-h em{font-style:normal;letter-spacing:.04em;text-transform:none;color:var(--amber)}
+.pf,.dsp{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.pf li{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:9px;font-size:13px;transition:background .3s}
+.pf li small{color:var(--muted2);font-size:11.5px}
+.pf li.on{background:var(--blue-dim)}
+.pf li.new{animation:flashIn 1.2s}
+@keyframes flashIn{0%{background:var(--green-dim)}}
+.pf em{margin-left:auto;font:600 10px var(--mono);font-style:normal;color:var(--green);background:var(--green-dim);padding:3px 8px;border-radius:999px}
+.dsp li{display:grid;grid-template-columns:auto 1fr;gap:0 9px;align-items:center;padding:3px 0;font-size:12.5px}
+.dsp svg{grid-row:span 2;color:var(--muted)}
+.dsp code{font:10.5px var(--mono);color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.as{display:flex;align-items:center;gap:9px;font-size:13px}
+.as i{width:8px;height:8px;border-radius:50%;background:#84A98C;transition:box-shadow .4s,background .3s}
+.as.off i{background:var(--amber)}
+.as.tick i{box-shadow:0 0 0 6px rgba(132,169,140,.35)}
+.as small{margin-left:auto;font:11px var(--mono);color:var(--muted2)}
+.log{flex:1;min-height:0;list-style:none;margin:0;padding:10px 14px 12px;display:flex;flex-direction:column;justify-content:flex-end;gap:7px;overflow:hidden;
+  mask-image:linear-gradient(to bottom,transparent,#000 22%);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 22%)}
+.log li{font-size:12.5px;line-height:1.38;animation:logIn .4s cubic-bezier(.2,.8,.2,1)}
+@keyframes logIn{from{opacity:0;transform:translateY(8px)}}
+.log .meta{display:flex;align-items:center;gap:7px;margin-bottom:1px}
+.log time{font:10.5px var(--mono);color:var(--muted2)}
+.log b{font:600 9.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:5px}
+.log .dm b{background:var(--blue-dim);color:var(--blue2)}
+.log .win b{background:var(--red-dim);color:var(--red)}
+.log .you b{background:var(--green-dim);color:var(--green)}
+.demo-note{display:flex;gap:26px;flex-wrap:wrap;margin-top:16px;font-size:13px;color:var(--muted)}
+.demo-note p{margin:0;max-width:60ch}
+.demo-note b{color:var(--text);font-weight:600}
+
+/* ---------- flow ---------- */
+.flow{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(5,1fr);gap:16px;position:relative;counter-reset:f}
+.flow::before{content:"";position:absolute;left:24px;right:24px;top:23px;height:2px;background:var(--line)}
+.flow::after{content:"";position:absolute;left:24px;right:24px;top:23px;height:2px;background:linear-gradient(90deg,var(--brand),var(--beige));transform-origin:0 50%;transform:scaleX(0);transition:transform 1.8s cubic-bezier(.65,0,.25,1)}
+.flow.in::after{transform:scaleX(1)}
+.flow li{position:relative;counter-increment:f}
+.flow li::before{content:"0" counter(f);display:grid;place-items:center;width:48px;height:48px;border-radius:14px;margin-bottom:18px;position:relative;z-index:1;
+  font:600 14px var(--mono);color:var(--blue2);background:var(--surface);border:1px solid var(--line2);transition:background .4s,color .4s,border-color .4s,box-shadow .4s;transition-delay:calc(var(--i)*.32s)}
+.flow.in li::before{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 10px 26px -10px rgba(47,107,154,.7)}
+.flow h3{font:650 17px/1.25 var(--font-d);margin:0 0 8px}
+.flow p{margin:0;font-size:14px;color:var(--muted)}
+.flow p code,.card p code,.eng p code{font:12.5px var(--mono);color:var(--blue2);background:var(--blue-dim);padding:1px 6px;border-radius:5px}
+
+/* ---------- bento ---------- */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.card{position:relative;grid-column:span 2;padding:26px;border-radius:20px;background:var(--surface);border:1px solid var(--line);overflow:hidden;isolation:isolate;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s}
+.card.w3{grid-column:span 3}
+.card::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity .3s;
+  background:radial-gradient(380px circle at var(--mx,50%) var(--my,50%),rgba(47,107,154,.09),transparent 50%)}
+.card:hover{transform:translateY(-4px);border-color:var(--beige);box-shadow:0 24px 44px -28px rgba(30,41,59,.35)}
+.card:hover::before{opacity:1}
+.card-ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--blue-dim);color:var(--blue2);margin-bottom:18px}
+.card h3{font:650 19px/1.25 var(--font-d);margin:0 0 8px;letter-spacing:-.01em}
+.card p{margin:0;font-size:14.5px;color:var(--muted)}
+.mini{margin-top:22px}
+.mp{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--glass);font-size:13.5px;margin-top:6px}
+.mp small{color:var(--muted2);font-size:12px}
+.mp em{margin-left:auto;font:600 10.5px var(--mono);font-style:normal;color:var(--green);background:var(--green-dim);padding:3px 9px;border-radius:999px}
+.mp.on{border-color:rgba(47,107,154,.4);background:var(--blue-dim)}
+.mp-ico{display:flex;gap:3px}.mp-ico i{width:14px;height:10px;border-radius:2px;border:1.5px solid currentColor;color:var(--muted)}
+.hist{display:flex;align-items:flex-end;gap:7px;height:70px}
+.hist i{flex:1;border-radius:5px 5px 2px 2px;background:var(--line2);height:calc(var(--h)*1%);transition:height .6s cubic-bezier(.2,.8,.2,1);position:relative}
+.hist i.use{background:linear-gradient(var(--blue-lt),var(--brand))}
+.hist i.pin::after{content:"";position:absolute;left:50%;top:-14px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px var(--amber)}
+.hist-l{display:flex;justify-content:space-between;margin-top:8px;font:11px var(--mono);color:var(--muted2)}
+kbd{font:600 11.5px var(--mono);color:var(--text);background:var(--surface2);border:1px solid var(--line2);border-bottom-width:3px;padding:2px 7px;border-radius:6px}
+.keys{display:flex;flex-direction:column;gap:9px;margin-top:20px;font-size:13px;color:var(--muted)}
+.keys div{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.keys span{margin-left:auto}
+
+/* ---------- engineering ---------- */
+.eng{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.eng article{padding:28px;border-radius:20px;background:var(--surface);border:1px solid var(--line)}
+.eng article.wide{grid-column:1/-1;display:grid;grid-template-columns:1.1fr 1fr;gap:34px;align-items:center}
+.eng h3{font:650 20px/1.25 var(--font-d);margin:0 0 10px;letter-spacing:-.01em}
+.eng p{margin:0 0 12px;font-size:14.5px;color:var(--muted)}
+.eng p:last-child{margin-bottom:0}
+.eng-tag{font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:12px;display:block}
+.layers{display:flex;flex-direction:column;gap:7px;margin-top:20px;font:500 12.5px var(--mono)}
+.layers div{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:var(--glass);color:var(--muted)}
+.layers div span{font-size:11px;color:var(--muted2)}
+.layers .dm{border-color:rgba(47,107,154,.45);background:var(--blue-dim);color:var(--text);transform:translateX(14px)}
+.layers .dm span{color:var(--blue2)}
+.layers .x{opacity:.55}
+.gcmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.gcmp figure{margin:0}
+.gcmp svg{display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:10px;border:1px solid var(--line2);background:var(--surface2)}
+.gcl{fill:none;stroke:var(--line2);stroke-width:1;vector-effect:non-scaling-stroke}
+.gci rect{fill:var(--muted2)}
+.gcmp .dm svg{border-color:rgba(47,107,154,.5);background:var(--blue-dim)}
+.gcmp .dm .gcl{stroke:rgba(47,107,154,.5)}
+.gcmp .dm .gci rect{fill:var(--blue)}
+.gcmp figcaption{margin-top:8px;font:600 12.5px var(--font)}
+.gcmp figcaption span{display:block;font:500 11px var(--mono);color:var(--muted2);margin-top:2px}
+.edid{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px;font:600 15px var(--mono)}
+.edid span{padding:12px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--glass);position:relative}
+.edid span small{display:block;margin-top:4px;font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
+.edid span:nth-child(1){color:#C05621}.edid span:nth-child(2){color:#A86A2C}.edid span:nth-child(3){color:#2F6B9A}
+.tests{display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:center}
+.tests .big{grid-row:span 7;font:700 clamp(64px,9vw,104px)/.9 var(--font-d);letter-spacing:-.04em;background:linear-gradient(180deg,var(--text),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tests .big small{display:block;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);-webkit-text-fill-color:var(--muted2);margin-top:12px}
+.tests div:not(.big){display:flex;align-items:center;gap:10px;font:500 13px var(--mono);color:var(--muted)}
+.tests div:not(.big) i{width:8px;height:8px;border-radius:50%;background:#84A98C;box-shadow:0 0 10px rgba(132,169,140,.7)}
+
+footer{padding:60px 0 70px;text-align:center;border-top:1px solid var(--line)}
+footer p{margin:14px 0 0;font:12.5px var(--mono);color:var(--muted2)}
+
+/* ---------- reveal ---------- */
+@media (prefers-reduced-motion:no-preference){
+  .js [data-rv]{opacity:0;transform:translateY(24px);transition:opacity .7s ease var(--d,0s),transform .7s cubic-bezier(.2,.8,.2,1) var(--d,0s)}
+  .js [data-rv].in{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+  html{scroll-behavior:auto}
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:1000px){
+  .demo-body{grid-template-columns:1fr}
+  .side{border-left:0;border-top:1px solid var(--line)}
+  .side-in{position:static}
+  .side-top{display:grid;grid-template-columns:1fr 1fr}
+  .side-top .side-sec+.side-sec{border-left:1px solid var(--line)}
+  .log{height:190px;flex:none}
+  .flow{grid-template-columns:1fr;gap:22px}
+  .flow::before,.flow::after{left:23px;right:auto;top:24px;bottom:24px;width:2px;height:auto}
+  .flow::after{transform-origin:50% 0;transform:scaleY(0)}
+  .flow.in::after{transform:scaleY(1)}
+  .flow li{padding-left:70px;min-height:48px}
+  .flow li::before{position:absolute;left:0;top:0;margin:0}
+  .bento{grid-template-columns:1fr 1fr}
+  .card,.card.w3{grid-column:span 1}
+  .eng{grid-template-columns:1fr}
+  .eng article.wide{grid-template-columns:1fr}
+}
+@media (max-width:700px){
+  .wrap{padding-inline:18px}
+  .top nav{display:none}
+  .hero{padding:120px 0 50px}
+  .hero-flow{padding:24px 20px}
+  .gcmp{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .stage{aspect-ratio:4/3}
+  .side-top{grid-template-columns:1fr}
+  .side-top .side-sec+.side-sec{border-left:0}
+  .bento{grid-template-columns:1fr}
+  .sec{padding:76px 0}
+}
+
+/* ---------- preview mode (iframe thumbnail in the portfolio) ---------- */
+.preview body{overflow:hidden}
+.preview .top,.preview .hero,.preview #demo .sec-head,.preview .demo-note,.preview .demo-top,
+.preview main>section:not(#demo),.preview footer{display:none}
+.preview #demo{padding:0}
+.preview #demo .wrap{max-width:none;padding:0}
+.preview .demo{height:100vh;border:0;border-radius:0;display:flex;flex-direction:column;box-shadow:none}
+.preview .demo-body{flex:1;min-height:0;display:block}
+.preview .side{display:none}
+.preview .stage{aspect-ratio:auto;height:100%}
+.preview .hint{display:none}
+</style>
+</head>
+<body>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="back" href="../#projects" aria-label="Back to the portfolio">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+      <span class="logo">DanielC<span>.</span><em>Portfolio</em></span>
+    </a>
+    <nav aria-label="Page sections">
+      <a href="#demo">Demo</a><a href="#flow">How it works</a><a href="#features">Features</a><a href="#engineering">Engineering</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="bloom" aria-hidden="true"></div>
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="wrap hero-in">
+    <div class="hero-icon" id="heroIcon"><img src="assets/desktop-manager/app-icon-256.png" alt="Desktop Manager app icon" width="132" height="132"></div>
+    <p class="eyebrow"><i></i>Windows desktop app · in development</p>
+    <h1>Desktop Manager</h1>
+    <p class="lead">Dock your laptop and Windows scatters your desktop icons. Undock it and it happens again.
+      <strong>Desktop Manager remembers a layout for every display setup</strong> and puts each icon back on the right
+      monitor, in the right spot, the moment your screens change.</p>
+    <div class="cta">
+      <a class="btn btn-p" href="#demo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+        Try the live demo</a>
+      <a class="btn btn-g" href="#flow">How it works</a>
+    </div>
+    <ul class="chips" aria-label="Technology">
+      <li>C#</li><li>.NET 10</li><li>WPF</li><li>Win32 &amp; COM interop</li><li>Windows 10 / 11</li><li>EN · ES · FR</li>
+    </ul>
+  </div>
+  <div class="wrap">
+    <div class="hero-flow" id="flow" data-rv>
+      <div class="hero-flow-h">
+        <p class="kicker">How it works</p>
+        <p>Plugging in, unplugging, sleep and wake: every display change runs the same five steps.</p>
+      </div>
+      <ol class="flow" id="flowList">
+        <li style="--i:0"><h3>Detect</h3><p>A display change fires. The app waits 2.5 s for Windows to finish settling before it trusts anything.</p></li>
+        <li style="--i:1"><h3>Snapshot</h3><p>The last-known-good layout is written to the <em>old</em> profile, so nothing is lost even if Windows already scrambled things.</p></li>
+        <li style="--i:2"><h3>Pause autosave</h3><p>Autosave stops, so a scrambled desktop can never overwrite a good layout.</p></li>
+        <li style="--i:3"><h3>Match</h3><p>Same monitors, by serial? Restore silently. Anything else asks first, and suggests a layout from a setup with the same number of displays.</p></li>
+        <li style="--i:4"><h3>Restore</h3><p>Every icon returns to its monitor and spot. Borrowed layouts are mapped left to right and scaled; anything that won't fit takes the nearest free slot.</p></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LIVE DEMO ============ -->
+<section class="sec" id="demo">
+  <div class="wrap">
+    <div class="sec-head" data-rv>
+      <p class="kicker">Live demo</p>
+      <h2>Unplug a monitor. Watch it come back.</h2>
+      <p class="sub">A simulation of the real restore flow, step for step from the spec. <b>Drag any icon</b> to make the
+        desk your own, then press <b>Unplug monitors</b> and <b>Plug back in</b>.</p>
+    </div>
+
+    <div class="demo" id="demoCard" data-state="running" data-paused="false" data-rv>
+      <div class="demo-top">
+        <div class="demo-id"><img src="assets/desktop-manager/app-icon-64.png" alt="">Desktop Manager <small>simulation</small></div>
+        <div class="run"><i></i><span id="runLabel">Playing the tour</span></div>
+        <div class="dbtns">
+          <button class="dbtn" id="btnToggle" type="button">Pause</button>
+          <button class="dbtn" id="btnRestart" type="button">Restart</button>
+        </div>
+      </div>
+      <div class="steps" id="steps" role="tablist" aria-label="Demo steps"></div>
+      <div class="demo-body">
+        <div class="stage" id="stage" role="img" aria-label="Simulated desk with a laptop and monitors. Events are described in the activity log.">
+          <div class="world" id="world"></div>
+          <div class="cap" id="cap"><b></b><span></span></div>
+          <div class="settle" id="settle"><span>Waiting for displays to settle</span><u><i></i></u><span>2.5 s</span></div>
+          <div class="hint" id="hint">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+            <span>Drag an icon, then try <b>Unplug</b> and <b>Plug back in</b></span>
+          </div>
+          <div class="prompt" id="prompt" role="alertdialog" aria-labelledby="prT" aria-describedby="prD">
+            <img src="assets/desktop-manager/app-icon-64.png" alt="">
+            <b id="prT">New display setup</b>
+            <p id="prD">These displays are new. Use the layout from <em>Home Setup</em>? It has the same number of displays.</p>
+            <div class="pr-bt"><button class="pr-no" id="prNo" type="button">Not now</button><button class="pr-yes" id="prYes" type="button">Use this layout</button></div>
+          </div>
+          <div class="cut" id="cut"><span id="cutText"></span></div>
+        </div>
+        <aside class="side" aria-label="Desktop Manager status">
+          <div class="side-in">
+            <div class="side-top">
+              <div class="side-sec"><div class="side-h">Profiles <em id="pfState"></em></div><ul class="pf" id="pf"></ul></div>
+              <div class="side-sec"><div class="side-h">Displays</div><ul class="dsp" id="dsp"></ul></div>
+            </div>
+            <div class="side-sec"><div class="as" id="as"><i></i><span id="asText">Autosave on</span><small id="asSub">every 3 s</small></div></div>
+            <ol class="log" id="log" aria-live="polite" aria-label="Activity log"></ol>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <div class="demo-note" data-rv>
+      <p><b>What's real here.</b> The timings, the order of operations and the matching rules are the app's own:
+        a 2.5 s settle, a last-known-good snapshot before anything moves, monitors matched by EDID serial, and unknown
+        setups mapped left to right and scaled to each resolution.</p>
+      <p><b>What's simulated.</b> The desk itself. The real app reads and moves actual Explorer icons through the
+        Windows shell.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="sec sec-alt" id="features">
+  <div class="wrap">
+    <div class="sec-head" data-rv>
+      <p class="kicker">Features</p>
+      <h2>Restoring icons was the start.</h2>
+      <p class="sub">It grew into a small desktop toolkit: an editor, desktop objects, and PowerToys-style utilities.</p>
+    </div>
+    <div class="bento">
+      <div class="card w3" data-rv>
+        <div class="card-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <h3>A profile for every setup</h3>
+        <p>A profile is a set of displays, identified by serial, with its own icon layout. Two monitors of the same model are still told apart.</p>
+        <div class="mini">
+          <div class="mp on"><span class="mp-ico"><i></i><i></i><i></i></span>Home Setup <small>3 displays</small><em>Connected</em></div>
+          <div class="mp"><span class="mp-ico"><i></i></span>Mobile <small>1 display</small></div>
+          <div class="mp"><span class="mp-ico"><i></i><i></i><i></i></span>Friend's desk <small>3 displays</small></div>
+        </div>
+      </div>
+      <div class="card w3" data-rv>
+        <div class="card-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3>Autosave, with history</h3>
+        <p>Saves as you work, keeps the last 10 versions of every profile, lets you pin the good ones, and can undo an automatic restore in one click.</p>
+        <div class="mini">
+          <div class="hist" aria-hidden="true">
+            <i style="--h:34"></i><i style="--h:52"></i><i style="--h:41" class="pin"></i><i style="--h:63"></i><i style="--h:48"></i><i style="--h:70"></i><i style="--h:57"></i><i style="--h:78"></i><i style="--h:66"></i><i style="--h:92" class="use"></i>
+          </div>
+          <div class="hist-l"><span>10 versions</span><span>pinned · in use</span></div>
+        </div>
+      </div>
+      <div class="card" data-rv>
+        <div class="card-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9 2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg></div>
+        <h3>Visual layout editor</h3>
+        <p>Rearrange a setup without plugging it in. Drafts with undo, zoom per display, snap to the grid (hold Alt for free placement), and drag icons between monitors.</p>
+      </div>
+      <div class="card" data-rv>
+        <div class="card-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></div>
+        <h3>8 desktop widgets</h3>
+        <p>Zones, group folders, pictures, notes, clock, weather, reminders and alarms. A no-overlap rule means none of them can ever hide an icon.</p>
+      </div>
+      <div class="card" data-rv>
+        <div class="card-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+        <h3>Built-in utilities</h3>
+        <p>On-demand tools with their own customizable shortcuts. Layout actions never get one, so you can't restore by accident.</p>
+        <div class="keys">
+          <div><kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>T</kbd><span>Always on Top</span></div>
+          <div><kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd><span>Text Extractor</span></div>
+        </div>
+      </div>
+      <div class="card" data-rv>
+        <div class="card-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M7 12h10M12 7l5 5-5 5"/></svg></div>
+        <h3>Import between displays</h3>
+        <p>Copy any display's layout onto another, from any profile. Positions scale to the new resolution, and anything in the way slides to the nearest free spot.</p>
+      </div>
+      <div class="card" data-rv>
+        <div class="card-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3>Safe by design</h3>
+        <p>Export and import, plus a silent backup every 14 days (the last 4 are kept). The app never deletes a file; deleted profiles are archived first.</p>
+      </div>
+      <div class="card" data-rv>
+        <div class="card-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <h3>Native, in three languages</h3>
+        <p>Lives in the tray, starts with Windows, follows light and dark mode, and speaks English, Spanish and French, matching your Windows language by default.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ENGINEERING ============ -->
+<section class="sec" id="engineering">
+  <div class="wrap">
+    <div class="sec-head" data-rv>
+      <p class="kicker">Under the hood</p>
+      <h2>The hard parts weren't the UI.</h2>
+      <p class="sub">The Windows desktop has quirks you only find by measuring. These findings shaped the design.</p>
+    </div>
+    <div class="eng">
+      <article data-rv>
+        <span class="eng-tag">Desktop layering</span>
+        <h3>One window draws every icon</h3>
+        <p>All desktop icons on a monitor are painted by a single Explorer list view, so nothing can be slotted <em>between</em> them. Everything the app draws sits above that layer, and a no-overlap rule makes objects reserve space the way icons do.</p>
+        <p>Nothing goes underneath, so the wallpaper layer (including Wallpaper Engine) is never touched.</p>
+        <div class="layers" aria-hidden="true">
+          <div>Top-level apps <span>browser, games</span></div>
+          <div class="dm">Desktop Manager objects <span>zones, notes, widgets</span></div>
+          <div>Desktop icons <span>one SysListView32</span></div>
+          <div class="x">Wallpaper <span>WorkerW · untouched</span></div>
+        </div>
+      </article>
+      <article data-rv>
+        <span class="eng-tag">Coordinate space</span>
+        <h3>A grid that fits every screen</h3>
+        <p>Windows spaces icons at a fixed pitch, so most resolutions end with a strip it can't use and the spacing shifts with scaling. Desktop Manager divides each monitor into equal cells that fill it edge to edge, so icons line up evenly and a layout moved to another resolution lands in the matching cell.</p>
+        <div class="gcmp" aria-hidden="true">
+          <figure>
+            <svg viewBox="0 0 160 90" preserveAspectRatio="none">
+              <defs><pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0v4" stroke="var(--amber)" stroke-width="1.4"/></pattern></defs>
+              <path class="gcl" d="M21 0v84M42 0v84M63 0v84M84 0v84M105 0v84M126 0v84M147 0v84M0 21h147M0 42h147M0 63h147M0 84h147"/>
+              <rect x="147" y="0" width="13" height="90" fill="url(#hatch)" opacity=".55"/><rect x="0" y="84" width="147" height="6" fill="url(#hatch)" opacity=".55"/>
+              <g class="gci"><rect x="5" y="5" width="11" height="11" rx="3"/><rect x="5" y="26" width="11" height="11" rx="3"/><rect x="26" y="5" width="11" height="11" rx="3"/><rect x="5" y="47" width="11" height="11" rx="3"/><rect x="131" y="5" width="11" height="11" rx="3"/></g>
+            </svg>
+            <figcaption>Windows default <span>fixed pitch, leftover strip</span></figcaption>
+          </figure>
+          <figure class="dm">
+            <svg viewBox="0 0 160 90" preserveAspectRatio="none">
+              <path class="gcl" d="M22.86 0v90M45.71 0v90M68.57 0v90M91.43 0v90M114.29 0v90M137.14 0v90M0 22.5h160M0 45h160M0 67.5h160"/>
+              <g class="gci"><rect x="5.9" y="5.7" width="11" height="11" rx="3"/><rect x="5.9" y="28.2" width="11" height="11" rx="3"/><rect x="28.8" y="5.7" width="11" height="11" rx="3"/><rect x="5.9" y="50.7" width="11" height="11" rx="3"/><rect x="143.1" y="5.7" width="11" height="11" rx="3"/></g>
+            </svg>
+            <figcaption>Desktop Manager <span>equal cells, edge to edge</span></figcaption>
+          </figure>
+        </div>
+      </article>
+      <article class="wide" data-rv>
+        <div>
+          <span class="eng-tag">Monitor identity</span>
+          <h3>Monitors are fingerprinted from EDID</h3>
+          <p>Each monitor is identified by manufacturer, product code and serial, read from the EDID data Windows caches in the registry. Panels without a serial, usually laptop screens, fall back to the device instance path, which is still unique per connection.</p>
+        </div>
+        <div class="edid" aria-label="Example EDID identity: manufacturer, product code and serial number">
+          <span>AUS<small>Manufacturer</small></span><span>25CA<small>Product</small></span><span>T4LM&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;<small>Serial</small></span>
+        </div>
+      </article>
+      <article class="wide" data-rv>
+        <div>
+          <span class="eng-tag">Testing</span>
+          <h3>A pure, tested core</h3>
+          <p>All the geometry lives in a UI-free core library: snapping, group moves, collision resolution, moves between monitors and proportional grids. The WPF app just draws what the core decides.</p>
+          <p>That split is what made a 60-icon, multi-monitor layout engine safe to keep changing.</p>
+        </div>
+        <div class="tests">
+          <div class="big">92<small>xUnit tests</small></div>
+          <div><i></i>Layout engine</div>
+          <div><i></i>Object geometry</div>
+          <div><i></i>Editor operations</div>
+          <div><i></i>Auto-layout logic</div>
+          <div><i></i>Profile store</div>
+          <div><i></i>Toolkit features</div>
+          <div><i></i>Feedback rounds</div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <a class="btn btn-g" href="../#projects">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+    All projects</a>
+  <p>Daniel Cruz · AI Developer · Montreal</p>
+</footer>
+
+<script>
+/* ===================================================================
+   Page effects: header, reveals, counters, card spotlight, icon tilt.
+   =================================================================== */
+(function () {
+  'use strict';
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var top = document.getElementById('top');
+  addEventListener('scroll', function () { top.classList.toggle('scrolled', scrollY > 20); }, { passive: true });
+
+  var rv = document.querySelectorAll('[data-rv]');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      var n = 0;
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        io.unobserve(e.target);
+        e.target.style.setProperty('--d', Math.min(n++ * 0.08, 0.4) + 's');
+        e.target.classList.add('in');
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    rv.forEach(function (el) { io.observe(el); });
+
+    var flow = document.getElementById('flowList');
+    var fio = new IntersectionObserver(function (e) {
+      if (e[0].isIntersecting) { flow.classList.add('in'); fio.disconnect(); }
+    }, { threshold: 0.35 });
+    fio.observe(flow);
+
+  } else {
+    rv.forEach(function (el) { el.classList.add('in'); });
+    document.getElementById('flowList').classList.add('in');
+  }
+
+  document.querySelectorAll('.card').forEach(function (c) {
+    c.addEventListener('pointermove', function (e) {
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  var icon = document.getElementById('heroIcon');
+  if (!reduce && matchMedia('(hover:hover)').matches) {
+    addEventListener('pointermove', function (e) {
+      var x = e.clientX / innerWidth - 0.5, y = e.clientY / innerHeight - 0.5;
+      icon.style.transform = 'perspective(600px) rotateY(' + (x * 18) + 'deg) rotateX(' + (-y * 18) + 'deg)';
+    }, { passive: true });
+  }
+})();
+
+/* ===================================================================
+   LIVE DEMO
+   A small model of the app: monitors in logical pixels, a proportional
+   icon grid per monitor, saved layouts per profile, and scripted acts
+   that follow the app's display-change flow.
+   =================================================================== */
+(function () {
+  'use strict';
+  var PREVIEW = document.documentElement.classList.contains('preview');
+  var card = document.getElementById('demoCard');
+  var stage = document.getElementById('stage');
+  var world = document.getElementById('world');
+
+  /* ---------- model ---------- */
+  var CELL = 240;   // target cell size; each monitor divides itself into equal cells (proportional grid)
+  var ICON = 200;   // icon box in world pixels
+
+  // serial: null means a panel without one (laptop screens); the app falls back to the device path.
+  var MONITORS = {
+    m1:  { name: 'Display 1', serial: 'Monitor 1 Serial Number', x: 0, y: 0, w: 1920, h: 1080 },
+    m2:  { name: 'Display 2', serial: 'Monitor 2 Serial Number', x: 1920, y: 0, w: 1920, h: 1080 },
+    lap: { name: 'Built-in Display', serial: null, x: 960, y: 1080, w: 1920, h: 1200, laptop: true },
+    f1:  { name: 'Display 1', serial: 'Monitor 3 Serial Number', x: -640, y: -360, w: 2560, h: 1440, alt: true },
+    f2:  { name: 'Display 2', serial: 'Monitor 4 Serial Number', x: 1920, y: 0, w: 1920, h: 1080, alt: true }
+  };
+  var SETUPS = {
+    home:   { name: 'Home Setup', mons: ['m1', 'm2', 'lap'] },
+    mobile: { name: 'Mobile', mons: ['lap'] },
+    friend: { name: 'New setup', mons: ['f1', 'f2', 'lap'] }
+  };
+
+  var GLYPH = {
+    trash: '<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/>',
+    image: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
+    download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+    mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
+    gamepad: '<rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10.5v4M5 12.5h4"/><path d="M15 11.5h.01M18 13.5h.01"/>',
+    chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-6.4A8 8 0 1 1 21 12z"/>',
+    music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    code: '<path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m14 5-4 14"/>',
+    terminal: '<path d="m5 8 4 4-4 4"/><path d="M12 17h7"/>',
+    file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 14h6"/>',
+    note: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/>'
+  };
+  var ICONS = [
+    { id: 'recycle', name: 'Recycle Bin', g: 'trash', c: ['#475569', '#94A3B8'] },
+    { id: 'photos', name: 'Photos', g: 'image', c: ['#A9481C', '#E07A45'] },
+    { id: 'downloads', name: 'Downloads', g: 'download', c: ['#B45309', '#F2B14A'] },
+    { id: 'mail', name: 'Mail', g: 'mail', c: ['#2F6B9A', '#8FB3D1'] },
+    { id: 'steam', name: 'Steam', g: 'gamepad', c: ['#0F2A44', '#2A6496'] },
+    { id: 'discord', name: 'Discord', g: 'chat', c: ['#1E3A5F', '#4F86B5'] },
+    { id: 'spotify', name: 'Spotify', g: 'music', c: ['#15803D', '#22C55E'] },
+    { id: 'games', name: 'Games', g: 'folder', c: ['#B45309', '#FCD34D'] },
+    { id: 'code', name: 'VS Code', g: 'code', c: ['#0369A1', '#38BDF8'] },
+    { id: 'term', name: 'Terminal', g: 'terminal', c: ['#111827', '#4B5563'] },
+    { id: 'projects', name: 'Projects', g: 'folder', c: ['#B45309', '#FCD34D'] },
+    { id: 'resume', name: 'Resume.pdf', g: 'file', c: ['#B91C1C', '#F87171'] },
+    { id: 'notes', name: 'Notes.txt', g: 'note', c: ['#475569', '#94A3B8'] },
+    { id: 'browser', name: 'Browser', g: 'globe', c: ['#0284C7', '#7DD3FC'] }
+  ];
+  var ICON_BY_ID = {};
+  ICONS.forEach(function (ic) { ICON_BY_ID[ic.id] = ic; });
+
+  function c(m, col, row) { return { m: m, c: col, r: row }; }
+  function defaults() {
+    return {
+      home: {
+        icons: {
+          steam: c('m1', 0, 0), discord: c('m1', 0, 1), spotify: c('m1', 0, 2), games: c('m1', 1, 0),
+          code: c('m2', 0, 0), term: c('m2', 1, 0), projects: c('m2', 2, 0),
+          resume: c('m2', 0, 1), notes: c('m2', 1, 1), browser: c('m2', 2, 1),
+          recycle: c('lap', 0, 0), photos: c('lap', 0, 1), downloads: c('lap', 0, 2), mail: c('lap', 1, 0)
+        },
+        objs: { zone: { m: 'm2', c: 0, r: 0, cw: 3, ch: 2 }, clock: { m: 'm1', c: 5, r: 0, cw: 3, ch: 2 } }
+      },
+      mobile: {
+        icons: {
+          recycle: c('lap', 0, 0), photos: c('lap', 0, 1), downloads: c('lap', 0, 2), mail: c('lap', 0, 3),
+          code: c('lap', 2, 0), term: c('lap', 3, 0), projects: c('lap', 4, 0),
+          resume: c('lap', 2, 1), notes: c('lap', 3, 1), browser: c('lap', 4, 1),
+          steam: c('lap', 2, 3), discord: c('lap', 3, 3), spotify: c('lap', 4, 3), games: c('lap', 5, 3)
+        },
+        objs: { zone: { m: 'lap', c: 2, r: 0, cw: 3, ch: 2 }, clock: { m: 'lap', c: 6, r: 0, cw: 2, ch: 2 } }
+      }
+    };
+  }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  var S = {
+    setup: 'home', matched: 'home', arranged: 'home',
+    layouts: defaults(), profiles: ['home', 'mobile'],
+    placed: {}, autosave: true,
+    act: 0, actStart: 0, actEnded: false,
+    autoplay: true, paused: false, busy: true,
+    cam: { tx: 0, ty: 0, s: 0.2 }
+  };
+
+  /* ---------- geometry ---------- */
+  function grid(id) {
+    var m = MONITORS[id];
+    var cols = Math.max(1, Math.floor(m.w / CELL)), rows = Math.max(1, Math.floor(m.h / CELL));
+    return { cols: cols, rows: rows, cw: m.w / cols, ch: m.h / rows };
+  }
+  function cellXY(p) {
+    var m = MONITORS[p.m], g = grid(p.m);
+    return { x: m.x + p.c * g.cw + (g.cw - ICON) / 2, y: m.y + p.r * g.ch + (g.ch - ICON) / 2 };
+  }
+  function objRect(p) {
+    var m = MONITORS[p.m], g = grid(p.m), pad = 20;
+    return { x: m.x + p.c * g.cw + pad, y: m.y + p.r * g.ch + pad, w: p.cw * g.cw - pad * 2, h: p.ch * g.ch - pad * 2 };
+  }
+  function key(m, col, row) { return m + ':' + col + ':' + row; }
+  function objCells(p, into) {
+    for (var cc = p.c; cc < p.c + p.cw; cc++)
+      for (var rr = p.r; rr < p.r + p.ch; rr++) into.add(key(p.m, cc, rr));
+    return into;
+  }
+  // Nearest free cell, searching the given monitor first, then the others.
+  function nearestFree(mons, m, col, row, taken, blocked) {
+    var order = [m].concat(mons.filter(function (x) { return x !== m; }));
+    for (var i = 0; i < order.length; i++) {
+      var mm = order[i], g = grid(mm), best = null, bd = Infinity;
+      for (var cc = 0; cc < g.cols; cc++) for (var rr = 0; rr < g.rows; rr++) {
+        var k = key(mm, cc, rr);
+        if (taken.has(k) || blocked.has(k)) continue;
+        var d = mm === m ? (cc - col) * (cc - col) + (rr - row) * (rr - row) : cc + rr;
+        if (d < bd) { bd = d; best = { m: mm, c: cc, r: rr }; }
+      }
+      if (best) return best;
+    }
+    return { m: m, c: col, r: row };
+  }
+  function leftToRight(setup) {
+    return SETUPS[setup].mons.slice().sort(function (a, b) { return MONITORS[a].x - MONITORS[b].x; });
+  }
+  // A borrowed layout: match monitors by left-to-right order, scale positions
+  // proportionally to each resolution, and send collisions to the nearest free slot.
+  function mapLayout(L, fromSetup, toSetup) {
+    var A = leftToRight(fromSetup), B = leftToRight(toSetup), pair = {};
+    A.forEach(function (m, i) { pair[m] = B[Math.min(i, B.length - 1)]; });
+    var out = { icons: {}, objs: {} };
+    Object.keys(L.objs).forEach(function (k) {
+      var p = L.objs[k], to = pair[p.m], g1 = grid(p.m), g2 = grid(to);
+      var cw = Math.max(1, Math.round(p.cw * g2.cols / g1.cols)), ch = Math.max(1, Math.round(p.ch * g2.rows / g1.rows));
+      out.objs[k] = {
+        m: to, cw: cw, ch: ch,
+        c: Math.min(Math.floor(p.c / g1.cols * g2.cols), g2.cols - cw),
+        r: Math.min(Math.floor(p.r / g1.rows * g2.rows), g2.rows - ch)
+      };
+    });
+    var taken = new Set(), blocked = objCells(out.objs.clock, new Set()), mons = SETUPS[toSetup].mons;
+    ICONS.forEach(function (ic) {
+      var p = L.icons[ic.id], to = pair[p.m], g1 = grid(p.m), g2 = grid(to);
+      var col = Math.floor((p.c + 0.5) / g1.cols * g2.cols), row = Math.floor((p.r + 0.5) / g1.rows * g2.rows);
+      var dest = (taken.has(key(to, col, row)) || blocked.has(key(to, col, row)))
+        ? nearestFree(mons, to, col, row, taken, blocked) : { m: to, c: col, r: row };
+      taken.add(key(dest.m, dest.c, dest.r));
+      out.icons[ic.id] = dest;
+    });
+    return out;
+  }
+
+  /* ---------- DOM ---------- */
+  var monEls = {}, icEls = {}, objEls = {};
+  Object.keys(MONITORS).forEach(function (id) {
+    var m = MONITORS[id], el = document.createElement('div');
+    el.className = 'mon' + (m.alt ? ' alt' : '');
+    el.style.cssText = 'left:' + m.x + 'px;top:' + m.y + 'px;width:' + m.w + 'px;height:' + m.h + 'px';
+    el.innerHTML = '<div class="mon-scr"><span class="mon-lbl"><b>' + m.name + '</b>' + (m.serial ? '<small>' + m.serial + '</small>' : '') +
+      '</span><div class="mon-ns">No signal</div></div>' + (m.laptop ? '<div class="mon-base"></div>' : '');
+    world.appendChild(el); monEls[id] = el;
+  });
+  var zone = document.createElement('div');
+  zone.className = 'obj zone'; zone.innerHTML = '<span class="zone-t">Work</span>';
+  var clock = document.createElement('div');
+  clock.className = 'obj clk'; clock.innerHTML = '<b class="clk-t"></b><span class="clk-d"></span>';
+  world.appendChild(zone); world.appendChild(clock);
+  objEls.zone = zone; objEls.clock = clock;
+  var ghost = document.createElement('div');
+  ghost.className = 'ghost'; world.appendChild(ghost);
+  ICONS.forEach(function (ic) {
+    var el = document.createElement('div');
+    el.className = 'ic'; el.dataset.id = ic.id; el.title = ic.name;
+    el.innerHTML = '<div class="ic-t" style="--c1:' + ic.c[0] + ';--c2:' + ic.c[1] + '"><svg viewBox="0 0 24 24" aria-hidden="true">' +
+      GLYPH[ic.g] + '</svg></div><div class="ic-l">' + ic.name + '</div>';
+    world.appendChild(el); icEls[ic.id] = el;
+  });
+
+  function tickClock() {
+    var d = new Date();
+    clock.querySelector('.clk-t').textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    clock.querySelector('.clk-d').textContent = d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+  }
+  tickClock(); setInterval(tickClock, 10000);
+
+  /* ---------- placement ---------- */
+  function setIcon(id, p, delay) {
+    S.placed[id] = p;
+    var xy = p.raw ? p : cellXY(p), el = icEls[id];
+    el.style.transitionDelay = (delay || 0) + 'ms';
+    el.style.transform = 'translate(' + xy.x + 'px,' + xy.y + 'px) rotate(' + (p.rot || 0) + 'deg)';
+  }
+  function setObj(id, p, delay) {
+    S.placed[id] = p;
+    var r = p.raw ? p : objRect(p), el = objEls[id];
+    el.style.transitionDelay = (delay || 0) + 'ms';
+    el.style.width = r.w + 'px'; el.style.height = r.h + 'px';
+    el.style.transform = 'translate(' + r.x + 'px,' + r.y + 'px) rotate(' + (p.rot || 0) + 'deg)';
+    if (id === 'clock') el.style.setProperty('--fs', Math.min(r.w * 0.24, r.h * 0.34) + 'px');
+  }
+  function place(L, stagger) {
+    ICONS.forEach(function (ic, i) { setIcon(ic.id, L.icons[ic.id], stagger ? i * 45 : 0); });
+    setObj('zone', L.objs.zone, 0);
+    setObj('clock', L.objs.clock, stagger ? 120 : 0);
+  }
+  function connect(setup) {
+    Object.keys(monEls).forEach(function (id) {
+      var on = SETUPS[setup].mons.indexOf(id) >= 0;
+      monEls[id].classList.toggle('on', on);
+      if (on) monEls[id].classList.remove('ns');
+    });
+  }
+  function fit() {
+    var mons = SETUPS[S.setup].mons, b = { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity };
+    mons.forEach(function (id) {
+      var m = MONITORS[id];
+      b.x1 = Math.min(b.x1, m.x - 30); b.y1 = Math.min(b.y1, m.y - 30);
+      b.x2 = Math.max(b.x2, m.x + m.w + 30); b.y2 = Math.max(b.y2, m.y + m.h + (m.laptop ? 100 : 30));
+    });
+    var W = stage.clientWidth, H = stage.clientHeight, pad = PREVIEW ? 0.06 : 0.09;
+    if (!W || !H) return;
+    var bw = b.x2 - b.x1, bh = b.y2 - b.y1;
+    var s = Math.min(W * (1 - pad * 2) / bw, H * (1 - pad * 2) / bh);
+    var tx = (W - bw * s) / 2 - b.x1 * s, ty = (H - bh * s) / 2 - b.y1 * s;
+    S.cam = { tx: tx, ty: ty, s: s };
+    world.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + s + ')';
+    stage.dataset.zoom = s < 0.26 ? 'far' : 'near';
+  }
+  function instantly(fn) {
+    stage.classList.add('instant');
+    fn();
+    void stage.offsetWidth;
+    setTimeout(function () { stage.classList.remove('instant'); }, 40);
+  }
+  function setState(setup) {
+    instantly(function () {
+      S.setup = setup; S.matched = setup; S.arranged = setup; S.autosave = true;
+      connect(setup); place(S.layouts[setup], false); fit();
+    });
+    renderSide();
+  }
+  if ('ResizeObserver' in window) new ResizeObserver(function () { instantly(fit); }).observe(stage);
+
+  /* What Windows does when a monitor disappears: icons from the missing screens get
+     packed onto the one that's left in no particular order, groups broken up, and the
+     app's own windows dumped on top. */
+  var seed = 11;
+  function rand() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  function windowsScramble(target) {
+    var mons = SETUPS[S.setup].mons, g = grid(target), taken = new Set(), moving = [];
+    ICONS.forEach(function (ic) {
+      var p = S.placed[ic.id];
+      if (!p.raw && mons.indexOf(p.m) >= 0) taken.add(key(p.m, p.c, p.r));
+      else moving.push(ic.id);
+    });
+    moving.sort(function () { return rand() - 0.5; });
+    var k = 0;
+    moving.forEach(function (id, i) {
+      var spot;
+      do { spot = { m: target, c: Math.floor(k / g.rows), r: k % g.rows }; k++; }
+      while (taken.has(key(spot.m, spot.c, spot.r)) && k < g.cols * g.rows);
+      taken.add(key(spot.m, spot.c, spot.r));
+      var xy = cellXY(spot);
+      setIcon(id, { raw: true, x: xy.x + (rand() - 0.5) * 70, y: xy.y + (rand() - 0.5) * 60, rot: (rand() - 0.5) * 16 }, 60 + i * 55);
+    });
+    var lm = MONITORS[target], dumped = 0;
+    ['zone', 'clock'].forEach(function (id, i) {
+      var p = S.placed[id];
+      if (!p.raw && mons.indexOf(p.m) >= 0) return;
+      dumped++;
+      setObj(id, { raw: true, x: lm.x + 520 + i * 420, y: lm.y + 300 + i * 160, w: i ? 520 : 680, h: i ? 400 : 440, rot: i ? 4 : -3 }, 200 + i * 120);
+    });
+    return { icons: moving.length, objs: dumped };
+  }
+
+  /* ---------- pausable clock ---------- */
+  var T = { t: 0, last: performance.now(), tasks: [], gen: 0 };
+  function at(ms, fn) { T.tasks.push({ at: T.t + ms, fn: fn, gen: T.gen }); }
+  function cancelAll() { T.gen++; T.tasks = []; }
+  setInterval(function () {
+    var now = performance.now();
+    if (!S.paused) T.t += now - T.last;
+    T.last = now;
+    var gen = T.gen, due = T.tasks.filter(function (t) { return t.at <= T.t; }).sort(function (a, b) { return a.at - b.at; });
+    T.tasks = T.tasks.filter(function (t) { return t.at > T.t; });
+    for (var i = 0; i < due.length; i++) { if (due[i].gen !== gen) continue; due[i].fn(); if (T.gen !== gen) break; }
+    renderSteps();
+  }, 40);
+
+  /* ---------- side panel, log, overlays ---------- */
+  var MON_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="20" height="13" rx="2"/><path d="M8 21h8M12 16v5"/></svg>';
+  var LAP_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="16" height="11" rx="2"/><path d="M2 19h20"/></svg>';
+  var newProfile = null;
+  function renderSide() {
+    var pf = document.getElementById('pf');
+    pf.innerHTML = S.profiles.map(function (k) {
+      var n = SETUPS[k].mons.length, on = S.matched === k;
+      return '<li class="' + (on ? 'on' : '') + (newProfile === k ? ' new' : '') + '">' + SETUPS[k].name +
+        ' <small>' + n + ' display' + (n > 1 ? 's' : '') + '</small>' + (on ? '<em>Connected</em>' : '') + '</li>';
+    }).join('');
+    newProfile = null;
+    document.getElementById('pfState').textContent = S.matched ? '' : 'matching…';
+    document.getElementById('dsp').innerHTML = SETUPS[S.setup].mons.map(function (id) {
+      var m = MONITORS[id];
+      return '<li>' + (m.laptop ? LAP_SVG : MON_SVG) + '<span>' + m.name + '</span><code>' + (m.serial || 'No serial · device path') + '</code></li>';
+    }).join('');
+    var as = document.getElementById('as');
+    as.classList.toggle('off', !S.autosave);
+    document.getElementById('asText').textContent = S.autosave ? 'Autosave on' : 'Autosave paused';
+    document.getElementById('asSub').textContent = S.autosave ? 'every 3 s' : 'protecting your layout';
+  }
+  var logEl = document.getElementById('log');
+  var SRC = { dm: 'App', win: 'Windows', you: 'You' };
+  function log(src, text) {
+    var li = document.createElement('li');
+    li.className = src;
+    var time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    li.innerHTML = '<div class="meta"><time>' + time + '</time><b>' + SRC[src] + '</b></div>';
+    li.appendChild(document.createTextNode(text));
+    logEl.appendChild(li);
+    while (logEl.children.length > 8) logEl.removeChild(logEl.firstChild);
+  }
+  var cap = document.getElementById('cap'), capId = 0;
+  var CAPL = { win: 'Windows', dm: 'Desktop Manager', ok: 'Done' };
+  function caption(kind, text) {
+    var id = ++capId;
+    cap.dataset.k = kind;
+    cap.querySelector('b').textContent = CAPL[kind];
+    cap.querySelector('span').textContent = text;
+    cap.classList.add('on');
+    at(3600, function () { if (capId === id) cap.classList.remove('on'); });
+  }
+  var settleEl = document.getElementById('settle');
+  function settle() {
+    settleEl.classList.remove('on'); void settleEl.offsetWidth; settleEl.classList.add('on');
+    at(2500, function () { settleEl.classList.remove('on'); });
+  }
+  var hintEl = document.getElementById('hint');
+  function idle() { S.busy = false; hintEl.classList.toggle('on', !PREVIEW); }
+  function busy() { S.busy = true; hintEl.classList.remove('on'); }
+  function setAutosave(on) { S.autosave = on; renderSide(); }
+  function match(k) { S.matched = k; renderSide(); }
+  setInterval(function () {
+    if (!S.autosave || S.paused) return;
+    var as = document.getElementById('as');
+    as.classList.add('tick'); setTimeout(function () { as.classList.remove('tick'); }, 500);
+  }, 3000);
+
+  var promptEl = document.getElementById('prompt'), promptOpen = false;
+  function showPrompt() { promptOpen = true; promptEl.classList.add('on'); }
+  function hidePrompt() { promptOpen = false; promptEl.classList.remove('on'); document.getElementById('prYes').classList.remove('press'); }
+  function accept(auto) {
+    if (!promptOpen) return;
+    var yes = document.getElementById('prYes');
+    yes.classList.add('press');
+    log('you', auto ? 'Chose “Use this layout”' : 'You chose “Use this layout”');
+    at(260, function () {
+      hidePrompt();
+      var mapped = mapLayout(S.layouts.home, 'home', 'friend');
+      S.layouts.friend = mapped;
+      if (S.profiles.indexOf('friend') < 0) S.profiles.push('friend');
+      newProfile = 'friend'; match('friend');
+      log('dm', 'Mapped left to right, scaled to each resolution');
+      caption('dm', 'Home Setup’s layout, fitted to new displays');
+      place(mapped, true); S.arranged = 'friend';
+    });
+    at(1500, function () { log('dm', 'Created profile “New setup”'); });
+    at(1900, function () { setAutosave(true); log('dm', 'Autosave resumed'); idle(); });
+  }
+  function decline() {
+    if (!promptOpen) return;
+    hidePrompt();
+    log('you', 'Chose “Not now”');
+    at(400, function () { log('dm', 'Kept the current layout · autosave stays paused'); });
+    at(1100, function () { log('dm', 'Will ask again in 2.5 minutes'); });
+    at(1200, function () { S.busy = false; });
+  }
+  document.getElementById('prYes').addEventListener('click', function () { accept(false); });
+  document.getElementById('prNo').addEventListener('click', decline);
+
+  var cut = document.getElementById('cut');
+  function sceneCut(text, mid, after) {
+    document.getElementById('cutText').textContent = text;
+    cut.classList.add('on');
+    at(460, mid);
+    at(1350, function () { cut.classList.remove('on'); });
+    at(1750, after);
+  }
+
+  /* ---------- acts ---------- */
+  function actHome() {
+    busy();
+    log('dm', 'Connected: Home Setup · 3 displays');
+    at(800, function () { log('dm', 'Autosave on · checks every 3 s'); idle(); });
+  }
+  function actUnplug() {
+    busy();
+    log('you', 'Unplugged both monitors');
+    ['m1', 'm2'].forEach(function (id) { monEls[id].classList.add('ns'); });
+    at(550, function () { S.setup = 'mobile'; connect('mobile'); fit(); renderSide(); });
+    at(1000, function () {
+      var n = windowsScramble('lap'); S.arranged = null;
+      caption('win', 'Icons from the missing screens get shuffled onto the laptop');
+      log('win', 'Moved ' + n.icons + ' icons and ' + n.objs + ' objects onto the laptop');
+    });
+    at(2000, function () { match(null); log('dm', 'Display change detected'); settle(); });
+    at(4500, function () { log('dm', 'Last-known-good snapshot saved to Home Setup'); });
+    at(4800, function () { setAutosave(false); log('dm', 'Autosave paused'); });
+    at(5100, function () { match('mobile'); log('dm', 'Exact match → Mobile'); caption('dm', 'Exact match: Mobile. Restoring silently'); });
+    at(5400, function () { place(S.layouts.mobile, true); S.arranged = 'mobile'; log('dm', 'Restored 14 icons and 2 objects'); });
+    at(6900, function () { setAutosave(true); log('dm', 'Autosave resumed'); caption('ok', 'Laptop layout restored. Nothing was lost.'); idle(); });
+  }
+  function actReplug() {
+    busy();
+    log('you', 'Plugged both monitors back in');
+    S.setup = 'home'; connect('home'); fit(); renderSide();
+    at(400, function () { caption('win', 'Windows leaves every icon on the laptop'); });
+    at(1000, function () { match(null); log('dm', 'Display change detected'); settle(); });
+    at(3500, function () { log('dm', 'Last-known-good snapshot saved to Mobile'); });
+    at(3800, function () { setAutosave(false); log('dm', 'Autosave paused'); });
+    at(4100, function () {
+      monEls.m1.classList.add('flash'); monEls.m2.classList.add('flash');
+      log('dm', 'Two identical monitors, told apart by their serial numbers');
+    });
+    at(5000, function () {
+      monEls.m1.classList.remove('flash'); monEls.m2.classList.remove('flash');
+      match('home'); log('dm', 'Exact match → Home Setup'); caption('dm', 'Exact match: Home Setup. Restoring silently');
+    });
+    at(5400, function () { place(S.layouts.home, true); S.arranged = 'home'; log('dm', 'Restored 14 icons and 2 objects across 3 displays'); });
+    at(6900, function () { setAutosave(true); log('dm', 'Autosave resumed'); caption('ok', 'Every icon is back on its own monitor.'); idle(); });
+  }
+  function actFriend() {
+    busy();
+    delete S.layouts.friend;
+    S.profiles = S.profiles.filter(function (k) { return k !== 'friend'; });
+    log('you', 'Connected to a friend’s two monitors');
+    S.setup = 'friend'; connect('friend'); fit(); renderSide();
+    at(400, function () { caption('win', 'Windows leaves every icon on the laptop'); });
+    at(1000, function () { match(null); log('dm', 'Display change detected'); settle(); });
+    at(3500, function () { log('dm', 'Last-known-good snapshot saved to Mobile'); });
+    at(3800, function () { setAutosave(false); log('dm', 'No saved setup has these displays · autosave paused'); });
+    at(4100, function () {
+      log('dm', 'Suggesting Home Setup: same number of displays (3)');
+      showPrompt();
+      if (S.autoplay) at(2400, function () { accept(true); });
+    });
+  }
+
+  var ACTS = [
+    { label: 'Home Setup', dur: 4550, needs: 'home', run: actHome, cut: 'Back home' },
+    { label: 'Unplug monitors', dur: 7700, needs: 'home', run: actUnplug, cut: 'At home, with everything plugged in' },
+    { label: 'Plug back in', dur: 7700, needs: 'mobile', run: actReplug, cut: 'On the go, laptop only' },
+    { label: 'A new desk', dur: 8750, needs: 'mobile', run: actFriend, cut: 'Later, at a friend’s desk…' }
+  ];
+
+  function goTo(i) {
+    cancelAll(); hidePrompt();
+    cap.classList.remove('on'); settleEl.classList.remove('on');
+    monEls.m1.classList.remove('flash'); monEls.m2.classList.remove('flash');
+    S.act = i; S.actStart = T.t; S.actEnded = false;
+    busy();
+    var A = ACTS[i];
+    function start() {
+      A.run();
+      at(A.dur, function () { S.actEnded = true; if (S.autoplay) goTo((i + 1) % ACTS.length); });
+    }
+    var ready = S.setup === A.needs && S.arranged === A.needs;
+    if (ready) start();
+    else sceneCut(A.cut, function () { setState(A.needs); }, function () { S.actStart = T.t; start(); });
+    renderSteps(true);
+  }
+
+  /* ---------- controls ---------- */
+  var stepsEl = document.getElementById('steps');
+  stepsEl.innerHTML = ACTS.map(function (a, i) {
+    return '<button class="step" type="button" role="tab" data-i="' + i + '"><span class="step-n">' + (i + 1) +
+      '</span><span class="step-l">' + a.label + '</span><span class="step-bar"><i></i></span></button>';
+  }).join('');
+  var stepEls = stepsEl.querySelectorAll('.step');
+  stepEls.forEach(function (b) {
+    b.addEventListener('click', function () { S.paused = false; renderRun(); goTo(+b.dataset.i); });
+  });
+  function renderSteps(full) {
+    var p = Math.max(0, Math.min(1, (T.t - S.actStart) / ACTS[S.act].dur));
+    stepEls.forEach(function (b, i) {
+      if (full) { b.classList.toggle('cur', i === S.act); b.setAttribute('aria-selected', i === S.act); }
+      b.style.setProperty('--p', i < S.act ? 1 : i === S.act ? p : 0);
+    });
+  }
+  var btnToggle = document.getElementById('btnToggle');
+  function renderRun() {
+    var state = S.paused ? 'paused' : S.autoplay ? 'running' : 'manual';
+    card.dataset.state = state;
+    card.dataset.paused = S.paused;
+    document.getElementById('runLabel').textContent =
+      state === 'paused' ? 'Paused' : state === 'running' ? 'Playing the tour' : 'You’re in control';
+    btnToggle.textContent = state === 'running' ? 'Pause' : 'Play tour';
+  }
+  btnToggle.addEventListener('click', function () {
+    if (!S.paused && S.autoplay) { S.paused = true; }
+    else {
+      S.paused = false; S.autoplay = true;
+      if (S.actEnded) goTo((S.act + 1) % ACTS.length);
+    }
+    renderRun();
+  });
+  document.getElementById('btnRestart').addEventListener('click', function () {
+    S.layouts = defaults(); S.profiles = ['home', 'mobile'];
+    S.paused = false; S.autoplay = true; S.arranged = null;
+    logEl.innerHTML = '';
+    renderRun();
+    goTo(0);
+  });
+
+  /* ---------- drag to rearrange (like the real desktop, autosave picks it up) ---------- */
+  function toWorld(e) {
+    var r = stage.getBoundingClientRect();
+    return { x: (e.clientX - r.left - S.cam.tx) / S.cam.s, y: (e.clientY - r.top - S.cam.ty) / S.cam.s };
+  }
+  function cellAt(pt) {
+    var mons = SETUPS[S.setup].mons, best = null, bd = Infinity;
+    mons.forEach(function (id) {
+      var m = MONITORS[id];
+      var dx = Math.max(m.x - pt.x, 0, pt.x - (m.x + m.w)), dy = Math.max(m.y - pt.y, 0, pt.y - (m.y + m.h));
+      var d = dx * dx + dy * dy;
+      if (d < bd) { bd = d; best = id; }
+    });
+    var m = MONITORS[best], g = grid(best);
+    return {
+      m: best,
+      c: Math.max(0, Math.min(g.cols - 1, Math.floor((pt.x - m.x) / g.cw))),
+      r: Math.max(0, Math.min(g.rows - 1, Math.floor((pt.y - m.y) / g.ch)))
+    };
+  }
+  var drag = null;
+  ICONS.forEach(function (ic) {
+    var el = icEls[ic.id];
+    el.addEventListener('pointerdown', function (e) {
+      if (PREVIEW || S.busy || S.arranged !== S.setup || !S.layouts[S.setup] || e.button > 0) return;
+      e.preventDefault();
+      if (S.autoplay) { S.autoplay = false; renderRun(); }
+      var pt = toWorld(e), xy = cellXY(S.placed[ic.id]);
+      drag = { id: ic.id, el: el, dx: pt.x - xy.x, dy: pt.y - xy.y, target: null };
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging');
+      el.style.transitionDelay = '0ms';
+    });
+    el.addEventListener('pointermove', function (e) {
+      if (!drag || drag.id !== ic.id) return;
+      var pt = toWorld(e);
+      el.style.transform = 'translate(' + (pt.x - drag.dx) + 'px,' + (pt.y - drag.dy) + 'px)';
+      var t = cellAt({ x: pt.x - drag.dx + ICON / 2, y: pt.y - drag.dy + ICON / 2 });
+      drag.target = t;
+      var m = MONITORS[t.m], g = grid(t.m);
+      ghost.style.width = g.cw - 24 + 'px'; ghost.style.height = g.ch - 24 + 'px';
+      ghost.style.transform = 'translate(' + (m.x + t.c * g.cw + 12) + 'px,' + (m.y + t.r * g.ch + 12) + 'px)';
+      ghost.classList.add('on');
+    });
+    function end(cancelled) {
+      if (!drag || drag.id !== ic.id) return;
+      var d = drag; drag = null;
+      el.classList.remove('dragging'); ghost.classList.remove('on');
+      if (cancelled || !d.target) { setIcon(d.id, S.placed[d.id], 0); return; }
+      drop(d.id, d.target);
+    }
+    el.addEventListener('pointerup', function () { end(false); });
+    el.addEventListener('pointercancel', function () { end(true); });
+  });
+  function drop(id, target) {
+    var L = S.layouts[S.setup], mons = SETUPS[S.setup].mons;
+    var taken = new Set(), owner = {};
+    ICONS.forEach(function (ic) {
+      if (ic.id === id) return;
+      var p = L.icons[ic.id], k = key(p.m, p.c, p.r);
+      taken.add(k); owner[k] = ic.id;
+    });
+    var blocked = objCells(L.objs.clock, new Set());
+    var dest = blocked.has(key(target.m, target.c, target.r))
+      ? nearestFree(mons, target.m, target.c, target.r, taken, blocked) : target;
+    var dk = key(dest.m, dest.c, dest.r), from = L.icons[id];
+    if (dk === key(from.m, from.c, from.r)) { setIcon(id, from, 0); return; }
+    var bumped = owner[dk];
+    if (bumped) {
+      taken.delete(dk);
+      var alt = nearestFree(mons, dest.m, dest.c, dest.r, new Set(Array.from(taken).concat(dk)), blocked);
+      L.icons[bumped] = alt; setIcon(bumped, alt, 120);
+    }
+    L.icons[id] = dest; setIcon(id, dest, 0);
+    var name = ICON_BY_ID[id].name;
+    log('you', 'Moved ' + name + ' to ' + MONITORS[dest.m].name + (bumped ? ' (' + ICON_BY_ID[bumped].name + ' made room)' : ''));
+    setTimeout(function () { log('dm', 'Autosaved ' + SETUPS[S.setup].name); }, 700);
+  }
+
+  /* ---------- start ---------- */
+  renderSide(); renderRun();
+  setState('home');
+  goTo(0);
+})();
+</script>
+</body>
+</html>

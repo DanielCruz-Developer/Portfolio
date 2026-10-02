@@ -46,8 +46,8 @@ NAV = {
     "logo": {"name": "DanielC", "suffix": "Portfolio"},
     "links": [
         {"label": "About", "href": "#about"},
+        {"label": "Projects", "href": "#projects"},
         {"label": "Credentials", "href": "#credentials"},
-        {"label": "Courses", "href": "#courses"},
         {"label": "Skills", "href": "#skills"},
     ],
     # The outlined button on the right of the menu.
@@ -144,6 +144,79 @@ EXPERIENCE = {
 }
 
 # ---------------------------------------------------------------------------
+# PROJECTS  --  the project cards. Each card opens its own page in Projects/.
+# ---------------------------------------------------------------------------
+
+PROJECTS_SECTION = {
+    "kicker": "Projects",
+    "title_html": "The projects I've built.",
+    "subtitle": (
+        "Each project opens an interactive walkthrough of how it works. "
+        "On a computer, hover a card to watch it run."
+    ),
+}
+
+# To add a project: copy one block, paste it below, change the values, and put
+# its page in the Projects/ folder.
+#
+#   "page"     the project's own page (file names with spaces are fine)
+#   "preview"  optional: what the hover preview loads; defaults to "page"
+#   "accent"   the card's glow color, as a hex code
+#   "icon"     optional: an image shown on the card cover; without one the
+#              cover shows the project's initials
+#   "category" groups projects for the filter buttons, which appear on their
+#              own once there are 3+ projects in 2+ categories
+#   "featured" True gives the card a whole row (use it on one project). It only
+#              applies when the other projects pair up evenly, two per row;
+#              otherwise it looks like the other cards
+#   "metrics"  optional: up to 3 (value, label) pairs shown on the card
+#   "features" optional: short feature names listed beside the metrics
+PROJECTS = [
+    {
+        "title": "Desktop Manager",
+        "tagline": "Your desktop icons, back where they belong on every monitor setup.",
+        "description": (
+            "A Windows tray app that saves a desktop icon layout for every display "
+            "setup and restores it when you dock, undock or wake. It identifies "
+            "monitors by EDID serial, maps layouts across resolutions, and adds "
+            "zones, notes and widgets that never cover an icon."
+        ),
+        "page": "Projects/Desktop Manager.html",
+        "preview": "Projects/Desktop Manager.html#preview",
+        "icon": "Projects/assets/desktop-manager/app-icon-256.png",
+        "accent": "#2F6B9A",
+        "category": "Desktop app",
+        "status": "In development",
+        "year": "2026",
+        "stack": ["C#", ".NET 10", "WPF", "Win32 interop", "xUnit"],
+        "metrics": [("8", "widgets")],
+        "features": ["Auto-restore", "Layout editor", "Autosave history",
+                     "Always on Top", "Text Extractor"],
+        "featured": True,
+    },
+    {
+        "title": "Tailored Cleaner",
+        "tagline": "Seven AI agents that tailor a CV and cover letter to a job post.",
+        "description": (
+            "A BeeAI multi-agent pipeline that reads the job and the CV, scores the "
+            "match and stops before spending tokens on a weak fit, edits both "
+            "documents, checks them in a validation loop, and exports PDFs. Every "
+            "agent runs on an OpenRouter model chain with fallbacks."
+        ),
+        "page": "Projects/Tailored Cleaner.html",
+        "preview": "Projects/Tailored Cleaner.html#preview",
+        "icon": "Projects/assets/Tailored Cleaner/Tailored Cleaner.jpg",
+        "accent": "#D9A07E",
+        "category": "AI agents",
+        "status": "Working prototype",
+        "year": "2026",
+        "stack": ["Python", "BeeAI", "OpenRouter", "Multi-agent"],
+        "metrics": [("7", "agents")],
+        "features": ["Cost gate", "Self-checking drafts", "Keeps your CV layout", "PDF export"],
+    },
+]
+
+# ---------------------------------------------------------------------------
 # CREDENTIALS  --  the two big certificate cards
 # ---------------------------------------------------------------------------
 
@@ -156,7 +229,8 @@ CREDENTIALS_SECTION = {
     ),
 }
 
-# "tags" become the small pills. Use "style": "blue" for the blue pill.
+# "tags" become the small pills. Use "style": "blue" for the lighter pill.
+# "link" is optional: it makes the whole card open that page.
 CREDENTIALS = [
     {
         "image": "certs/ibm-cert.png",
@@ -174,6 +248,9 @@ CREDENTIALS = [
         ),
         "issuer": "IBM Skills Network · Aug 2026",
         "code": "RT4C10Z9PPED",
+        # Clicking the card opens the courses page (COURSES_PAGE below).
+        "link": "ibm-courses.html",
+        "link_label": "View the 9 courses",
     },
     {
         "image": "certs/cybersecurity.png",
@@ -195,8 +272,20 @@ CREDENTIALS = [
 ]
 
 # ---------------------------------------------------------------------------
-# COURSES
+# COURSES  --  these live on their own page, opened from the IBM certificate
+# card above. The page's heading, picture and code come from the credential
+# whose "link" matches "file" below.
 # ---------------------------------------------------------------------------
+
+COURSES_PAGE = {
+    "file": "ibm-courses.html",
+    "title": "IBM Courses | DanielC Portfolio",
+    "description": (
+        "The nine verifiable courses behind Daniel Cruz's IBM RAG and Agentic AI "
+        "Professional Certificate."
+    ),
+    "back_label": "Back to portfolio",
+}
 
 COURSES_SECTION = {
     "kicker": "Coursework",

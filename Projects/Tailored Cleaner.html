@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tailored Cleaner | DanielC Portfolio</title>
+<meta name="description" content="Tailored Cleaner: seven AI agents that tailor a CV and cover letter to a job post. Python, BeeAI, OpenRouter.">
+<link rel="icon" href="assets/Tailored%20Cleaner/Tailored%20Cleaner.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<script>
+  // #preview renders only the pipeline, full-bleed. The portfolio's project
+  // cards load this page in a scaled iframe as a moving thumbnail.
+  if (location.hash === '#preview') document.documentElement.classList.add('preview');
+  document.documentElement.classList.add('js');
+</script>
+<style>
+/* ===================================================================
+   Tokens, taken from the app icon: charcoal #464446, peach #D9A07E,
+   copper #C47F5E and cream #F3DCC8. Dark first; light follows the
+   system setting.
+     --flow  copper: the signal moving through the pipeline
+     --mark  champagne: decisions and finished documents
+     --halt  terracotta: the halt path, unresolved patches
+   =================================================================== */
+:root{
+  --bg:#1A191B; --bg2:#211F21; --panel:#29272A; --panel2:#312E31;
+  --line:#433E3F; --line-soft:#363234; --dot:#343133;
+  --txt:#F5E9DF; --txt2:#C9B3A6; --txt3:#9C887D;
+  --flow:#E3A27F; --mark:#F1D1A2; --halt:#E26F5B;
+  --flow-ghost:rgba(227,162,127,.15);
+  --mark-ghost:rgba(241,209,162,.12);
+  --halt-ghost:rgba(226,111,91,.14);
+  --glow:0 0 0 1px rgba(227,162,127,.3), 0 0 22px -6px rgba(227,162,127,.55);
+  --shadow:0 24px 60px -28px rgba(0,0,0,.85), 0 2px 0 0 rgba(255,255,255,.03) inset;
+  --grid-dot:rgba(255,235,220,.05);
+  --peach:#D9A07E; --copper:#C47F5E; --cream:#F3DCC8; --charcoal:#464446;
+  --glass:rgba(243,220,200,.04);
+  --sans:Archivo,"Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){
+  :root{
+    --bg:#F4E7DD; --bg2:#F9F0E9; --panel:#FFFFFF; --panel2:#FBF4EE;
+    --line:#E5D2C4; --line-soft:#EFE2D8; --dot:#EADBD0;
+    --txt:#2E2B2D; --txt2:#5E5150; --txt3:#85756E;
+    --flow:#A65A36; --mark:#8A6220; --halt:#B43F2E;
+    --flow-ghost:rgba(166,90,54,.10);
+    --mark-ghost:rgba(138,98,32,.10);
+    --halt-ghost:rgba(180,63,46,.10);
+    --glow:0 0 0 1px rgba(166,90,54,.3), 0 0 20px -8px rgba(166,90,54,.45);
+    --shadow:0 24px 50px -30px rgba(70,50,40,.35), 0 1px 0 0 rgba(255,255,255,.9) inset;
+    --grid-dot:rgba(70,50,40,.08);
+    --glass:rgba(255,255,255,.7);
+    color-scheme:light;
+  }
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--flow);text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:28px}
+::selection{background:var(--peach);color:#1A191B}
+:focus-visible{outline:2px solid var(--flow);outline-offset:3px;border-radius:8px}
+
+/* ---------- top bar ---------- */
+.top{position:fixed;inset:0 0 auto;z-index:50;height:64px;display:flex;align-items:center;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
+.top.scrolled{background:rgba(26,25,27,.84);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:var(--line)}
+@media (prefers-color-scheme:light){.top.scrolled{background:rgba(244,231,221,.86)}}
+.top .wrap{display:flex;align-items:center;gap:20px;width:100%}
+.back{display:inline-flex;align-items:center;gap:8px;font:500 13.5px var(--mono);color:var(--txt2);padding:8px 12px 8px 8px;border-radius:10px;transition:color .2s,background .2s}
+.back:hover{color:var(--txt);background:var(--glass)}
+.back svg{transition:transform .2s}.back:hover svg{transform:translateX(-3px)}
+.logo{font:600 16px var(--mono);color:var(--txt);letter-spacing:-.02em}
+.logo span{color:#C05621}.logo em{color:var(--txt2);font-style:normal;font-weight:400}
+.top nav{margin-left:auto;display:flex;gap:4px}
+.top nav a{font:500 13px var(--mono);color:var(--txt2);padding:8px 12px;border-radius:8px;transition:color .2s,background .2s}
+.top nav a:hover{color:var(--txt);background:var(--glass)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding:146px 0 64px;overflow:hidden;text-align:center}
+.bloom{position:absolute;inset:-20% -10% auto;height:860px;pointer-events:none;
+  background:
+    radial-gradient(38% 48% at 50% 30%,rgba(217,160,126,.32),transparent 70%),
+    radial-gradient(28% 38% at 22% 58%,rgba(196,127,94,.22),transparent 70%),
+    radial-gradient(28% 38% at 80% 52%,rgba(243,220,200,.10),transparent 70%);
+  filter:blur(10px);animation:drift 14s ease-in-out infinite alternate}
+@media (prefers-color-scheme:light){.bloom{opacity:.7}}
+@keyframes drift{to{transform:scale(1.08) translateY(20px)}}
+.hero-grid{position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(var(--grid-dot) 1.4px,transparent 1.4px);background-size:22px 22px;
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 35%,#000 20%,transparent 75%);-webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 35%,#000 20%,transparent 75%)}
+.hero-in{position:relative;display:flex;flex-direction:column;align-items:center}
+.hero-icon{width:128px;height:128px;margin-bottom:28px;position:relative;transition:transform .25s ease-out;animation:float 6s ease-in-out infinite}
+.hero-icon img{width:100%;height:100%;border-radius:30px;box-shadow:0 30px 60px -18px rgba(196,127,94,.7),0 0 0 1px rgba(255,255,255,.08)}
+.hero-icon::after{content:"";position:absolute;inset:-28px;border-radius:50%;background:radial-gradient(circle,rgba(217,160,126,.35),transparent 65%);z-index:-1;filter:blur(8px)}
+@keyframes float{50%{translate:0 -10px}}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font:500 12.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--flow);border:1px solid rgba(227,162,127,.35);background:var(--flow-ghost);padding:7px 16px;border-radius:999px;margin:0 0 22px}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--mark);animation:ping 2.2s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(241,209,162,.6)}60%,100%{box-shadow:0 0 0 7px rgba(241,209,162,0)}}
+h1{font:700 clamp(46px,8vw,88px)/1.1 var(--sans);letter-spacing:-.035em;margin:0 0 18px;padding-bottom:.06em;
+  background:linear-gradient(180deg,var(--txt) 35%,var(--peach));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{max-width:660px;font-size:clamp(16.5px,1.8vw,19px);color:var(--txt2);margin:0 0 32px}
+.lead strong{color:var(--txt);font-weight:600}
+.cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:30px}
+.btn{display:inline-flex;align-items:center;gap:9px;font:600 14.5px var(--sans);padding:13px 24px;border-radius:12px;cursor:pointer;border:1px solid transparent;transition:transform .2s,box-shadow .25s,background .2s,border-color .2s}
+.btn:active{transform:scale(.97)}
+.btn-p{background:linear-gradient(135deg,var(--peach),var(--copper));color:#221A17;box-shadow:0 10px 30px -10px rgba(196,127,94,.8)}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 16px 40px -10px rgba(196,127,94,.9);color:#221A17}
+.btn-g{background:var(--glass);color:var(--txt);border-color:var(--line)}
+.btn-g:hover{border-color:var(--flow);transform:translateY(-2px)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;list-style:none;padding:0;margin:0}
+.chips li{font:500 12.5px var(--mono);color:var(--txt2);border:1px solid var(--line);background:var(--glass);padding:6px 13px;border-radius:999px}
+
+/* in -> agents -> out */
+.io{margin:64px auto 0;max-width:940px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:24px 26px;border:1px solid var(--line);border-radius:22px;background:var(--glass)}
+.io-col{display:flex;flex-direction:column;gap:8px}
+.io-col:first-child{align-items:flex-end}
+.io-col:last-child{align-items:flex-start}
+.io-h{font:700 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--txt3)}
+.io-f{display:inline-flex;align-items:center;gap:9px;font:500 13px var(--mono);color:var(--txt2);padding:9px 13px;border-radius:10px;border:1px dashed var(--line);background:var(--panel)}
+.io-f svg{color:var(--txt3);flex:none}
+.io-col:last-child .io-f{border-style:solid;border-color:rgba(241,209,162,.45);color:var(--mark);background:var(--mark-ghost)}
+.io-col:last-child .io-f svg{color:var(--mark)}
+.io-mid{position:relative;display:flex;align-items:center;gap:14px}
+.io-wire{position:relative;width:70px;height:2px;background:var(--line);overflow:hidden;border-radius:1px}
+.io-wire::after{content:"";position:absolute;inset:0;width:40%;background:linear-gradient(90deg,transparent,var(--flow),transparent);animation:run 2.2s linear infinite}
+.io-wire.b::after{animation-delay:1.1s}
+@keyframes run{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+.io-core{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 20px;border-radius:16px;border:1px solid rgba(227,162,127,.5);background:var(--flow-ghost);box-shadow:var(--glow)}
+.io-core b{font:700 30px/1 var(--sans);color:var(--flow);letter-spacing:-.02em}
+.io-core span{font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--txt2)}
+
+/* ---------- sections ---------- */
+.sec{padding:96px 0;position:relative}
+.sec-alt{background:var(--bg2);border-block:1px solid var(--line-soft)}
+.sec-head{max-width:720px;margin-bottom:40px}
+.kicker{font:700 12px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--flow);margin:0 0 14px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:28px;height:1px;background:currentColor}
+h2{font:700 clamp(30px,4.2vw,46px)/1.08 var(--sans);letter-spacing:-.025em;margin:0}
+.sub{color:var(--txt2);font-size:17px;margin:16px 0 0}
+.sub b{color:var(--txt);font-weight:600}
+
+/* ---------- highlights ---------- */
+.hl-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.hl{position:relative;padding:26px;border-radius:20px;background:var(--panel);border:1px solid var(--line);overflow:hidden;isolation:isolate;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s}
+.hl::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity .3s;
+  background:radial-gradient(380px circle at var(--mx,50%) var(--my,50%),rgba(227,162,127,.13),transparent 50%)}
+.hl:hover{transform:translateY(-4px);border-color:rgba(227,162,127,.4)}
+.hl:hover::before{opacity:1}
+.hl-ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--flow-ghost);color:var(--flow);margin-bottom:18px}
+.hl h3{font:650 19px/1.25 var(--sans);margin:0 0 8px;letter-spacing:-.01em}
+.hl p{margin:0;font-size:14.5px;color:var(--txt2)}
+.hl code{font:12.5px var(--mono);color:var(--mark);background:var(--mark-ghost);padding:1px 6px;border-radius:5px}
+.hl-viz{margin-top:20px}
+.gate-viz{display:flex;align-items:center;gap:12px;font:500 12px var(--mono);color:var(--txt3)}
+.gate-viz .bar{position:relative;flex:1;height:8px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
+.gate-viz .bar i{position:absolute;inset:0 22% 0 0;background:linear-gradient(90deg,var(--copper),var(--peach));border-radius:inherit}
+.gate-viz .bar u{position:absolute;top:-3px;bottom:-3px;left:65%;width:2px;background:var(--txt)}
+.gate-viz b{color:var(--mark);font-size:18px}
+.passes{display:flex;gap:6px}
+.passes span{flex:1;padding:8px 6px;text-align:center;white-space:nowrap;border-radius:9px;font:600 11px var(--mono);border:1px solid var(--line);color:var(--txt3)}
+.passes span.a,.passes span.b{flex:2.6}
+.passes span.a{border-color:var(--halt);color:var(--halt);background:var(--halt-ghost)}
+.passes span.b{border-color:var(--flow);color:var(--flow);background:var(--flow-ghost)}
+.models{display:flex;flex-wrap:wrap;align-items:center;gap:5px;font:500 11px var(--mono)}
+.models span{padding:4px 8px;border-radius:6px;border:1px solid var(--line);color:var(--txt2);background:var(--panel2)}
+.models span.live{border-color:var(--flow);color:var(--flow);background:var(--flow-ghost)}
+.models em{font-style:normal;color:var(--txt3)}
+.layout-viz{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.layout-viz .doc{display:flex;flex-direction:column;gap:5px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2)}
+.layout-viz .doc i{height:6px;border-radius:3px;background:var(--line)}
+.layout-viz .doc i.h{width:55%;height:8px;background:var(--txt3)}
+.layout-viz .doc i.s{width:80%}.layout-viz .doc i.t{width:65%}
+.layout-viz .doc.out{border-color:rgba(241,209,162,.45)}
+.layout-viz .doc.out i.h{background:var(--mark)}
+.layout-viz .doc.out i.n{background:var(--flow);opacity:.7}
+.layout-viz svg{color:var(--txt3)}
+
+footer{padding:60px 0 70px;text-align:center;border-top:1px solid var(--line-soft)}
+footer p{margin:14px 0 0;font:12.5px var(--mono);color:var(--txt3)}
+
+/* ---------- reveal ---------- */
+@media (prefers-reduced-motion:no-preference){
+  .js [data-rv]{opacity:0;transform:translateY(24px);transition:opacity .7s ease var(--d,0s),transform .7s cubic-bezier(.2,.8,.2,1) var(--d,0s)}
+  .js [data-rv].in{opacity:1;transform:none}
+}
+
+@media (max-width:820px){
+  .hl-grid{grid-template-columns:1fr}
+  .io{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .io-col:first-child,.io-col:last-child{align-items:center}
+  .io-mid{flex-direction:column}
+  .io-wire{width:2px;height:28px}
+  .io-wire::after{width:100%;height:40%;background:linear-gradient(180deg,transparent,var(--flow),transparent);animation-name:runv}
+  @keyframes runv{from{transform:translateY(-100%)}to{transform:translateY(260%)}}
+}
+@media (max-width:700px){
+  .wrap{padding-inline:18px}
+  .top nav{display:none}
+  .hero{padding:118px 0 48px}
+  .sec{padding:72px 0}
+}
+/* ===================================================================
+   THE PIPELINE  (the live demo)
+   =================================================================== */
+.tc-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;font-size:14px}
+/* ── card shell ─────────────────────────────────────────────────────── */
+.tc-card{
+  width:100%; max-width:1080px; background:var(--bg2);
+  border:1px solid var(--line); border-radius:14px;
+  box-shadow:var(--shadow); overflow:hidden;
+}
+
+.tc-top{
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  padding:16px 20px; border-bottom:1px solid var(--line);
+  background:var(--panel);
+}
+.tc-id{display:flex; align-items:baseline; gap:10px; margin-right:auto}
+.tc-name{font-size:16px; font-weight:700; letter-spacing:-.01em}
+.tc-sub{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:10.5px; color:var(--txt3); letter-spacing:.02em;
+}
+.tc-run{
+  display:flex; align-items:center; gap:7px;
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:10px; color:var(--txt2); letter-spacing:.06em; text-transform:uppercase;
+  padding:5px 9px; border:1px solid var(--line); border-radius:5px; background:var(--panel2);
+}
+.tc-live{
+  width:6px; height:6px; border-radius:50%; background:var(--flow);
+  box-shadow:0 0 0 3px var(--flow-ghost); animation:breathe 2.4s ease-in-out infinite;
+}
+.tc-card[data-paused="true"] .tc-live{background:var(--txt3); box-shadow:none; animation:none}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.35}}
+
+.tc-btns{display:flex; gap:6px}
+.tc-btn{
+  font:500 11.5px/1 Archivo,sans-serif; color:var(--txt2);
+  background:var(--panel2); border:1px solid var(--line); border-radius:6px;
+  padding:8px 12px; cursor:pointer; transition:color .15s, border-color .15s, background .15s;
+}
+.tc-btn:hover{color:var(--txt); border-color:var(--txt3)}
+.tc-btn:focus-visible{outline:2px solid var(--flow); outline-offset:2px}
+
+/* ── body: rail + readout ───────────────────────────────────────────── */
+.tc-body{display:grid; grid-template-columns:372px 1fr}
+.tc-rail{
+  position:relative; padding:20px 16px; border-right:1px solid var(--line);
+  background:
+    radial-gradient(circle at 1px 1px, var(--grid-dot) 1px, transparent 0) 0 0/18px 18px,
+    var(--bg2);
+}
+.tc-rail svg{display:block; width:100%; height:auto}
+
+/* ── rail: schematic language ───────────────────────────────────────── */
+.wire{fill:none; stroke:var(--line); stroke-width:1.4; stroke-linecap:round}
+.wire-lit{
+  fill:none; stroke:var(--flow); stroke-width:1.6; stroke-linecap:round;
+  stroke-dasharray:1; stroke-dashoffset:1;
+  transition:stroke-dashoffset .55s cubic-bezier(.4,0,.2,1);
+  /* a marker paints even when the dash pattern hides its stroke, so the
+     arrowhead has to be withheld explicitly until the wire is energised */
+  marker-end:none;
+}
+.on>.wire-lit{stroke-dashoffset:0; marker-end:url(#arLit)}
+.loop.on>.wire-lit{marker-end:url(#arMrk)}
+.wire-halt{
+  fill:none; stroke:var(--halt); stroke-width:1.3; stroke-dasharray:3 3;
+  opacity:.45; stroke-linecap:round;
+}
+.loop .wire-lit{stroke:var(--mark)}
+
+.nbox{fill:var(--panel); stroke:var(--line); stroke-width:1.3; transition:stroke .35s, fill .35s}
+.node.on .nbox{stroke:var(--flow); fill:var(--panel2)}
+.node.done .nbox{stroke:var(--line); fill:var(--panel2)}
+.node.on .nglow{opacity:1}
+.nglow{
+  fill:none; stroke:var(--flow); stroke-width:1.3; opacity:0;
+  transition:opacity .35s; filter:blur(3.5px);
+}
+.ncode{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:8.5px;
+  font-weight:700; letter-spacing:.1em; fill:var(--txt3); transition:fill .35s;
+}
+.node.on .ncode{fill:var(--flow)}
+.node.done .ncode{fill:var(--txt3)}
+.nname{font-size:13px; font-weight:500; fill:var(--txt2); transition:fill .35s}
+.node.on .nname,.node.done .nname{fill:var(--txt)}
+.node{cursor:pointer}
+.node:focus-visible{outline:none}
+.node:focus-visible .nbox{stroke:var(--mark); stroke-width:2}
+
+.chip{fill:var(--panel2); stroke:var(--line); stroke-width:1.1; stroke-dasharray:3 2.5}
+.chip-t{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:8.5px;
+  fill:var(--txt3); letter-spacing:.01em; transition:fill .35s;
+}
+.g-out.on .chip{stroke:var(--mark); stroke-dasharray:none; fill:var(--mark-ghost)}
+.g-out.on .chip-t{fill:var(--mark)}
+
+.gate{fill:var(--panel); stroke:var(--line); stroke-width:1.3; transition:stroke .35s, fill .35s}
+.gate-t{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:8.5px;
+  fill:var(--txt3); letter-spacing:.02em; transition:fill .35s;
+}
+.g-gate.on .gate{stroke:var(--mark); fill:var(--mark-ghost)}
+.g-gate.on .gate-t{fill:var(--mark)}
+
+.wlabel{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:7.5px;
+  letter-spacing:.09em; text-transform:uppercase; fill:var(--txt3);
+}
+.wlabel.halt{fill:var(--halt); opacity:.75}
+.wlabel.mark{fill:var(--txt3)}
+.on .wlabel.mark{fill:var(--mark)}
+.loop.on .wlabel{fill:var(--mark)}
+
+.pulse{fill:var(--flow); opacity:0}
+.pulse.go{opacity:1}
+
+/* ── readout panel ──────────────────────────────────────────────────── */
+.tc-read{display:flex; flex-direction:column; min-width:0; background:var(--panel)}
+
+.rd-head{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:18px 22px 0;
+}
+.rd-stage{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10px; font-weight:700;
+  letter-spacing:.14em; color:var(--flow);
+  padding:4px 8px; border:1px solid var(--flow); border-radius:4px;
+  background:var(--flow-ghost);
+}
+.rd-stage[data-kind="mark"]{color:var(--mark); border-color:var(--mark); background:var(--mark-ghost)}
+.rd-file{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10.5px;
+  color:var(--txt3); margin-left:auto; text-align:right;
+}
+
+.rd-title{
+  padding:12px 22px 0; font-size:25px; font-weight:700;
+  letter-spacing:-.022em; text-wrap:balance; line-height:1.12;
+}
+.rd-role{
+  padding:9px 22px 0; max-width:60ch;
+  font-size:13.5px; line-height:1.6; color:var(--txt2);
+}
+.rd-role b{color:var(--txt); font-weight:600}
+
+.rd-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:1px;
+  margin:18px 0 0; background:var(--line); border-block:1px solid var(--line);
+}
+.cell{background:var(--panel); padding:13px 22px 15px; min-width:0}
+.cell-h{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:8.5px;
+  font-weight:700; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--txt3); margin-bottom:9px;
+}
+.mchain{display:flex; flex-wrap:wrap; align-items:center; gap:4px 5px}
+.mrow{display:flex; flex-wrap:wrap; align-items:center; gap:4px 5px; width:100%}
+.mrow+.mrow{margin-top:7px}
+.mstage{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:8.5px;
+  letter-spacing:.1em; color:var(--txt3); width:34px; flex:none;
+}
+.mchip{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10px;
+  color:var(--txt2); background:var(--panel2); border:1px solid var(--line);
+  border-radius:4px; padding:3.5px 7px; white-space:nowrap;
+}
+.mchip.live{color:var(--flow); border-color:var(--flow); background:var(--flow-ghost)}
+.mchip.rest{color:var(--txt3); border-style:dashed}
+.marrow{color:var(--txt3); font-size:9px}
+
+.emits{display:flex; flex-direction:column; gap:5px}
+.emit{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10.5px;
+  color:var(--mark); display:flex; align-items:center; gap:7px;
+}
+.emit::before{
+  content:""; width:5px; height:5px; flex:none; border-radius:1px;
+  background:var(--mark); opacity:.75;
+}
+.emit span{color:var(--txt3)}
+
+/* instrument strip */
+.rd-inst{padding:15px 22px; border-bottom:1px solid var(--line); min-height:86px}
+.inst-h{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:8.5px;
+  font-weight:700; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--txt3); margin-bottom:11px;
+}
+.meter{display:flex; align-items:center; gap:14px}
+.meter-num{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:27px;
+  font-weight:700; color:var(--mark); font-variant-numeric:tabular-nums;
+  line-height:1; letter-spacing:-.02em;
+}
+.meter-track{
+  position:relative; flex:1; height:9px; border-radius:2px;
+  background:var(--panel2); border:1px solid var(--line); overflow:hidden;
+}
+.meter-fill{
+  display:block; height:100%; width:0; background:var(--mark); opacity:.85;
+  transition:width 1.1s cubic-bezier(.32,.72,.28,1);
+}
+.meter-tick{
+  position:absolute; top:-4px; bottom:-4px; width:1.5px; background:var(--txt2);
+}
+.meter-cap{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:9.5px;
+  color:var(--txt3); white-space:nowrap;
+}
+.facts{display:flex; flex-wrap:wrap; gap:7px}
+.fact{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10px;
+  border:1px solid var(--line); border-radius:5px; padding:5px 9px;
+  background:var(--panel2); color:var(--txt2);
+  animation:pop .32s cubic-bezier(.2,.9,.3,1) backwards;
+}
+.fact b{color:var(--txt); font-weight:500}
+.fact.hi{border-color:var(--mark); color:var(--mark); background:var(--mark-ghost)}
+.fact.hi b{color:var(--mark)}
+.fact.bad{border-color:var(--halt); color:var(--halt); background:var(--halt-ghost)}
+.fact.good{border-color:var(--flow); color:var(--flow); background:var(--flow-ghost)}
+@keyframes pop{from{opacity:0; transform:translateY(5px)}to{opacity:1; transform:none}}
+
+/* console */
+.rd-log{
+  flex:1; min-height:158px; max-height:230px; overflow:auto;
+  scrollbar-color:var(--line) transparent;
+  padding:13px 22px 16px; background:var(--bg2);
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; line-height:1.75;
+  scrollbar-width:thin;
+}
+.rd-log .ln{
+  display:flex; gap:9px; color:var(--txt2);
+  animation:slide .3s ease backwards;
+}
+@keyframes slide{from{opacity:0; transform:translateX(-5px)}to{opacity:1; transform:none}}
+.ln .t{color:var(--txt3); flex:none; font-variant-numeric:tabular-nums}
+.ln.head .m{color:var(--txt); font-weight:700; letter-spacing:.02em}
+.ln.val .m{color:var(--mark)}
+.ln.ok .m{color:var(--flow)}
+.ln.warn .m{color:var(--halt)}
+.ln .m{white-space:pre-wrap; word-break:break-word}
+
+/* ── stepper ────────────────────────────────────────────────────────── */
+.tc-foot{
+  display:flex; align-items:center; gap:3px; flex-wrap:wrap;
+  padding:12px 20px; border-top:1px solid var(--line); background:var(--panel);
+}
+.step{
+  flex:1; min-width:74px; text-align:left; cursor:pointer; background:none;
+  border:none; padding:8px 8px 9px; border-radius:6px; position:relative;
+  font-family:inherit; transition:background .18s;
+}
+.step:hover{background:var(--panel2)}
+.step:focus-visible{outline:2px solid var(--flow); outline-offset:-2px}
+.step-bar{height:2px; border-radius:1px; background:var(--line); margin-bottom:8px; overflow:hidden}
+.step-bar i{display:block; height:100%; width:0; background:var(--flow); transition:width .2s linear}
+.step.past .step-bar i{width:100%; background:var(--txt3)}
+.step-k{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:9px; font-weight:700;
+  letter-spacing:.1em; color:var(--txt3); display:block;
+}
+.step-l{font-size:11px; color:var(--txt3); display:block; margin-top:2px; white-space:nowrap}
+.step.now .step-k{color:var(--flow)}
+.step.now .step-l{color:var(--txt)}
+.step.past .step-k,.step.past .step-l{color:var(--txt2)}
+
+/* ── caption under the card ─────────────────────────────────────────── */
+.tc-note{
+  width:100%; max-width:1080px; display:flex; gap:22px; flex-wrap:wrap;
+  font-size:12px; color:var(--txt2); line-height:1.6;
+}
+.tc-note b{color:var(--txt); font-weight:600}
+.tc-note p{margin:0; max-width:50ch}
+.tc-note code{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; color:var(--txt2);
+}
+
+@media (max-width:880px){
+  .tc-body{grid-template-columns:1fr}
+  .tc-rail{border-right:none; border-bottom:1px solid var(--line); display:flex; justify-content:center}
+  .tc-rail svg{max-width:400px}
+  .rd-grid{grid-template-columns:1fr}
+  .rd-title{font-size:21px}
+  .tc-foot{gap:0}
+  .step{min-width:64px}
+  .step-l{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
+  .tc-live{animation:none}
+}
+
+/* ---------- preview mode (iframe thumbnail in the portfolio) ---------- */
+.preview body{overflow:hidden;background:var(--bg2)}
+.preview .top,.preview .hero,.preview #demo .sec-head,.preview .tc-note,.preview main>section:not(#demo),.preview footer{display:none}
+.preview #demo{padding:0}
+.preview #demo .wrap{max-width:none;padding:0}
+.preview .tc-card{max-width:none;height:100vh;border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column}
+.preview .tc-body{flex:1;min-height:0}
+.preview .tc-rail{display:flex;align-items:center;justify-content:center;padding:12px}
+.preview .tc-rail svg{width:auto;height:100%;max-width:100%}
+.preview .rd-log{max-height:none}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .bloom,.hero-icon,.io-wire::after{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="back" href="../#projects" aria-label="Back to the portfolio">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+      <span class="logo">DanielC<span>.</span><em>Portfolio</em></span>
+    </a>
+    <nav aria-label="Page sections">
+      <a href="#demo">Demo</a><a href="#highlights">Highlights</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="bloom" aria-hidden="true"></div>
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="wrap hero-in">
+    <div class="hero-icon" id="heroIcon"><img src="assets/Tailored%20Cleaner/Tailored%20Cleaner.jpg" alt="Tailored Cleaner app icon" width="128" height="128"></div>
+    <p class="eyebrow"><i></i>AI agents · working prototype</p>
+    <h1>Tailored Cleaner</h1>
+    <p class="lead">Paste a job post, point it at your CV, and <strong>seven AI agents hand back a CV and cover letter
+      tailored to that job</strong>. It checks the fit before spending a token on drafts, keeps your CV's own layout,
+      and proofreads its own work.</p>
+    <div class="cta">
+      <a class="btn btn-p" href="#demo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+        Watch a run</a>
+      <a class="btn btn-g" href="#highlights">Highlights</a>
+    </div>
+    <ul class="chips" aria-label="Technology">
+      <li>Python</li><li>BeeAI</li><li>OpenRouter</li><li>pypdf</li><li>xhtml2pdf</li>
+    </ul>
+  </div>
+  <div class="wrap">
+    <div class="io" data-rv aria-label="Two files in, seven agents, two PDFs out">
+      <div class="io-col">
+        <span class="io-h">You provide</span>
+        <span class="io-f"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>job_description.txt</span>
+        <span class="io-f"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><circle cx="12" cy="13" r="2"/><path d="M9 18a3 3 0 0 1 6 0"/></svg>Curriculum.pdf</span>
+      </div>
+      <div class="io-mid" aria-hidden="true">
+        <span class="io-wire"></span>
+        <div class="io-core"><b>7</b><span>agents</span></div>
+        <span class="io-wire b"></span>
+      </div>
+      <div class="io-col">
+        <span class="io-h">You get</span>
+        <span class="io-f"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="m9 15 2 2 4-4"/></svg>CV.pdf</span>
+        <span class="io-f"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>Cover Letter.pdf</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LIVE DEMO ============ -->
+<section class="sec sec-alt" id="demo">
+  <div class="wrap">
+    <div class="sec-head" data-rv>
+      <p class="kicker">Live demo</p>
+      <h2>Watch one run, agent by agent.</h2>
+      <p class="sub">A replay of the orchestrator's real output, stage by stage. <b>Click any agent</b> to jump to it.</p>
+    </div>
+    <div class="tc-wrap" data-rv>
+    <div class="tc-card" id="card" data-paused="false">
+      <div class="tc-top">
+        <div class="tc-id">
+          <span class="tc-name">Tailored Cleaner</span>
+          <span class="tc-sub">7-agent CV &amp; cover-letter pipeline</span>
+        </div>
+        <div class="tc-run"><i class="tc-live"></i><span id="runlabel">sample run</span></div>
+        <div class="tc-btns">
+          <button class="tc-btn" id="toggle" aria-label="Pause the run">Pause</button>
+          <button class="tc-btn" id="restart">Restart</button>
+        </div>
+      </div>
+
+      <div class="tc-body">
+        <div class="tc-rail" id="rail"></div>
+
+        <div class="tc-read">
+          <div class="rd-head">
+            <span class="rd-stage" id="rdStage">STAGE 01 / 07</span>
+            <span class="rd-file" id="rdFile"></span>
+          </div>
+          <h2 class="rd-title" id="rdTitle"></h2>
+          <p class="rd-role" id="rdRole"></p>
+
+          <div class="rd-grid">
+            <div class="cell">
+              <div class="cell-h">Model chain</div>
+              <div class="mchain" id="rdChain"></div>
+            </div>
+            <div class="cell">
+              <div class="cell-h">Writes to state</div>
+              <div class="emits" id="rdEmits"></div>
+            </div>
+          </div>
+
+          <div class="rd-inst">
+            <div class="inst-h" id="instH">Readout</div>
+            <div id="instBody"></div>
+          </div>
+
+          <div class="rd-log" id="log" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="tc-foot" id="foot"></div>
+    </div>
+
+    <div class="tc-note">
+      <p><b>How to read it.</b> Solid copper is data actually moving. Champagne marks the
+      two points where the system decides something: the match gate, and the judge's
+      approval. The dashed red stub off the gate is the run that never happens.</p>
+      <p><b>Sample run.</b> The console replays the orchestrator's real output format.
+      The job, the scores and the token counts shown are illustrative. Click any stage,
+      then use <code>&larr; &rarr;</code> and <code>space</code>.</p>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HIGHLIGHTS ============ -->
+<section class="sec" id="highlights">
+  <div class="wrap">
+    <div class="sec-head" data-rv>
+      <p class="kicker">Highlights</p>
+      <h2>Lean, careful and yours.</h2>
+    </div>
+    <div class="hl-grid">
+      <article class="hl" data-rv>
+        <div class="hl-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <h3>Stops before it spends</h3>
+        <p>The match agent scores the job against your CV first. Below <code>0.65</code> the run pauses and asks, so no tokens go into drafts for a weak fit.</p>
+        <div class="hl-viz gate-viz" aria-hidden="true"><b>0.78</b><span class="bar"><i></i><u></u></span><span>gate 0.65</span></div>
+      </article>
+      <article class="hl" data-rv>
+        <div class="hl-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3>A check loop that only shrinks</h3>
+        <p>A judge reviews both documents and returns exact fixes. The first pass freezes the list of problems; later passes only re-check it, so the loop always converges.</p>
+        <div class="hl-viz passes" aria-hidden="true"><span class="a">pass 1 · 7 fixes</span><span class="b">pass 2 · approved</span><span>3</span><span>4</span><span>5</span></div>
+      </article>
+      <article class="hl" data-rv>
+        <div class="hl-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+        <h3>Your layout, kept</h3>
+        <p>The CV reader captures your CV's structure as a template, so the edited version lands back in your own sections and order instead of a generic format.</p>
+        <div class="hl-viz layout-viz" aria-hidden="true">
+          <div class="doc"><i class="h"></i><i class="s"></i><i class="t"></i><i class="h"></i><i class="s"></i></div>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          <div class="doc out"><i class="h"></i><i class="s n"></i><i class="t"></i><i class="h"></i><i class="s n"></i></div>
+        </div>
+      </article>
+      <article class="hl" data-rv>
+        <div class="hl-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M4 12h16M4 17h7"/><circle cx="18" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg></div>
+        <h3>Models that fail over</h3>
+        <p>Every agent has its own OpenRouter model chain, picked for its job. Reasoning models plan, faster models write, and a failing model hands over without stopping the run.</p>
+        <div class="hl-viz models" aria-hidden="true"><span class="live">deepseek-v3.2</span><em>&rarr;</em><span>gpt-5-mini</span><em>&rarr;</em><span>claude-haiku-4.5</span><em>&rarr;</em><span>+ 4 more</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <a class="btn btn-g" href="../#projects">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+    All projects</a>
+  <p>Daniel Cruz · AI Developer · Montreal</p>
+</footer>
+
+<script>
+/* ===================================================================
+   Page effects: header, reveals, card spotlight, icon tilt.
+   =================================================================== */
+(function () {
+  'use strict';
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var top = document.getElementById('top');
+  addEventListener('scroll', function () { top.classList.toggle('scrolled', scrollY > 20); }, { passive: true });
+
+  var rv = document.querySelectorAll('[data-rv]');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      var n = 0;
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        io.unobserve(e.target);
+        e.target.style.setProperty('--d', Math.min(n++ * 0.08, 0.4) + 's');
+        e.target.classList.add('in');
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    rv.forEach(function (el) { io.observe(el); });
+  } else {
+    rv.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  document.querySelectorAll('.hl').forEach(function (c) {
+    c.addEventListener('pointermove', function (e) {
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  var icon = document.getElementById('heroIcon');
+  if (!reduce && matchMedia('(hover:hover)').matches) {
+    addEventListener('pointermove', function (e) {
+      var x = e.clientX / innerWidth - 0.5, y = e.clientY / innerHeight - 0.5;
+      icon.style.transform = 'perspective(600px) rotateY(' + (x * 18) + 'deg) rotateX(' + (-y * 18) + 'deg)';
+    }, { passive: true });
+  }
+})();
+</script>
+<script>
+/* ===================================================================
+   THE PIPELINE: a replay of one run, beat by beat.
+   =================================================================== */
+(function(){
+"use strict";
+
+/* ── 1. rail geometry ───────────────────────────────────────────────── */
+var NODES = [
+  {id:"a1", code:"A1", name:"Job intake",      x:22,  y:52,  w:140, h:48},
+  {id:"a2", code:"A2", name:"CV reader",       x:198, y:52,  w:140, h:48},
+  {id:"a3", code:"A3", name:"Match analysis",  x:85,  y:146, w:190, h:48},
+  {id:"a4", code:"A4", name:"CV editor",       x:22,  y:272, w:140, h:48},
+  {id:"a5", code:"A5", name:"Cover letter",    x:198, y:272, w:140, h:48},
+  {id:"a6", code:"A6", name:"Validation loop", x:85,  y:366, w:190, h:48},
+  {id:"a7", code:"A7", name:"PDF export",      x:85,  y:482, w:190, h:48}
+];
+var ORDER = ["a1","a2","a3","gate","a4","a5","a6","a7"];
+
+var WIRES = {
+  w_s1 :{p:[[92,32],[92,52]]},
+  w_s2 :{p:[[268,32],[268,52]]},
+  w_a1 :{p:[[92,100],[92,124],[180,124],[180,146]]},
+  w_a2 :{p:[[268,100],[268,124],[180,124],[180,146]]},
+  w_gt :{p:[[180,194],[180,214]]},
+  w_f4 :{p:[[180,242],[180,258],[92,258],[92,272]]},
+  w_f5 :{p:[[180,242],[180,258],[268,258],[268,272]]},
+  w_46 :{p:[[92,320],[92,346],[180,346],[180,366]]},
+  w_56 :{p:[[268,320],[268,346],[180,346],[180,366]]},
+  w_l4 :{p:[[85,390],[16,390],[16,296],[22,296]], loop:true},
+  w_l5 :{p:[[275,390],[344,390],[344,296],[338,296]], loop:true},
+  w_67 :{p:[[180,414],[180,482]]},
+  w_o1 :{p:[[180,530],[180,546],[92,546],[92,562]]},
+  w_o2 :{p:[[180,530],[180,546],[268,546],[268,562]]}
+};
+
+/* orthogonal path with rounded corners: the schematic's only drawing rule */
+function ortho(pts, r){
+  r = r || 9;
+  var d = "M" + pts[0][0] + "," + pts[0][1];
+  for(var i=1;i<pts.length-1;i++){
+    var p=pts[i], a=pts[i-1], b=pts[i+1];
+    var d1=Math.hypot(p[0]-a[0],p[1]-a[1]), d2=Math.hypot(p[0]-b[0],p[1]-b[1]);
+    var rr=Math.min(r, d1/2, d2/2);
+    var u1=[(a[0]-p[0])/d1,(a[1]-p[1])/d1], u2=[(b[0]-p[0])/d2,(b[1]-p[1])/d2];
+    d += " L"+(p[0]+u1[0]*rr).toFixed(2)+","+(p[1]+u1[1]*rr).toFixed(2)
+      +  " Q"+p[0]+","+p[1]+" "+(p[0]+u2[0]*rr).toFixed(2)+","+(p[1]+u2[1]*rr).toFixed(2);
+  }
+  var L=pts[pts.length-1];
+  return d + " L"+L[0]+","+L[1];
+}
+
+function chip(id, cls, x, y, w, h, label){
+  return '<g id="'+id+'" class="'+cls+'">'
+    + '<rect class="chip" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="5"/>'
+    + '<text class="chip-t" x="'+(x+w/2)+'" y="'+(y+h/2+3)+'" text-anchor="middle">'+label+'</text>'
+    + '</g>';
+}
+
+function buildRail(){
+  var s = '<svg viewBox="0 0 360 598" role="img" aria-label="Tailored Cleaner pipeline schematic">';
+  s += '<style>'
+     + '.mk-dim{stroke:var(--line);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}'
+     + '.mk-lit{stroke:var(--flow);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}'
+     + '.mk-mrk{stroke:var(--mark);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}'
+     + '</style>';
+  s += '<defs>'
+     + '<marker id="arDim" viewBox="0 0 9 9" refX="7" refY="4.5" markerWidth="4.6" markerHeight="4.6" orient="auto"><path class="mk-dim" d="M1.6,1.6 L7,4.5 L1.6,7.4"/></marker>'
+     + '<marker id="arLit" viewBox="0 0 9 9" refX="7" refY="4.5" markerWidth="4.6" markerHeight="4.6" orient="auto"><path class="mk-lit" d="M1.6,1.6 L7,4.5 L1.6,7.4"/></marker>'
+     + '<marker id="arMrk" viewBox="0 0 9 9" refX="7" refY="4.5" markerWidth="4.6" markerHeight="4.6" orient="auto"><path class="mk-mrk" d="M1.6,1.6 L7,4.5 L1.6,7.4"/></marker>'
+     + '</defs>';
+
+  /* the run that never happens */
+  s += '<path class="wire-halt" d="'+ortho([[110,228],[52,228]])+'"/>'
+     + '<text class="wlabel halt" x="48" y="231" text-anchor="end">halt</text>';
+
+  /* wires */
+  var k, w;
+  for(k in WIRES){
+    w = WIRES[k];
+    var d = ortho(w.p);
+    s += '<g id="'+k+'" class="wgrp'+(w.loop?" loop":"")+'">'
+       + '<path id="p_'+k+'" class="wire" d="'+d+'" marker-end="url(#arDim)"/>'
+       + '<path class="wire-lit" pathLength="1" d="'+d+'" marker-end="url(#'+(w.loop?"arMrk":"arLit")+')"/>'
+       + '</g>';
+  }
+  /* one-shot travelling pulses, drawn above the wires */
+  for(k in WIRES){
+    s += '<circle class="pulse" id="pu_'+k+'" r="3.1" cx="0" cy="0">'
+       + '<animateMotion id="mo_'+k+'" dur="0.62s" begin="indefinite" fill="remove" rotate="0">'
+       + '<mpath href="#p_'+k+'" xlink:href="#p_'+k+'"/></animateMotion></circle>';
+  }
+
+  /* wire labels */
+  s += '<g id="g_loop" class="loop">'
+     + '<text class="wlabel" x="50" y="384" text-anchor="middle">retry</text>'
+     + '<text class="wlabel" x="310" y="384" text-anchor="middle">retry</text></g>';
+  s += '<g id="g_appr"><text class="wlabel mark" x="189" y="452">approved</text></g>';
+
+  /* sources */
+  s += chip("src1","g-src",22,6,140,26,"job_description.txt");
+  s += chip("src2","g-src",198,6,140,26,"Curriculum.pdf");
+
+  /* the gate: the one decision shape in the diagram */
+  s += '<g id="gate" class="g-gate">'
+     + '<path class="gate" d="M110,228 L124,214 L236,214 L250,228 L236,242 L124,242 Z"/>'
+     + '<text class="gate-t" x="180" y="231" text-anchor="middle">score \u2265 0.65</text></g>';
+
+  /* agents */
+  NODES.forEach(function(n){
+    var tx = n.x + 13;
+    s += '<g id="'+n.id+'" class="node" tabindex="0" role="button" aria-label="Stage '+n.code+', '+n.name+'">'
+       + '<rect class="nglow" x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="7"/>'
+       + '<rect class="nbox" x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="7"/>'
+       + '<text class="ncode" x="'+tx+'" y="'+(n.y+18)+'">'+n.code+'</text>'
+       + '<text class="nname" x="'+tx+'" y="'+(n.y+35)+'">'+n.name+'</text>'
+       + '</g>';
+  });
+
+  /* artefacts */
+  s += chip("out1","g-out",22,562,140,26,"CV.pdf");
+  s += chip("out2","g-out",198,562,140,26,"Cover Letter.pdf");
+
+  return s + '</svg>';
+}
+
+/* ── 2. the run ─────────────────────────────────────────────────────── */
+var POOL_TAIL = "+ 4 more";
+
+var BEATS = [
+{
+  k:"a1", stage:1, primary:"a1", on:["a1"], wires:["w_s1"], dur:3400,
+  label:"STAGE 01 / 07", file:"Agents/A1-Linkedin_Agent.py", title:"Job intake",
+  role:"Reads whatever you pasted into <b>job_description.txt</b> and lifts it into a typed <b>JobSet</b>: title, company, location, seniority and must-haves. It is one JSON call. There is no scraping, no browser and no tools.",
+  chain:[{models:["gemini-2.5-flash","qwen3-next-80b","llama-3.3-70b"], live:0, rest:POOL_TAIL}],
+  emits:["state.Job_set"],
+  instH:"Extracted",
+  facts:[["title","Senior Data Analyst",""],["company","Northwind",""],["location","Remote · EU",""],["must-haves","7",""]],
+  logs:[[0,"head","A1 - job description intake"],
+        [520,"dim","read job_description.txt · 4,812 chars"],
+        [1150,"dim","run_llm_json → google/gemini-2.5-flash"],
+        [2150,"val","Job: Senior Data Analyst @ Northwind (Remote · EU)"],
+        [2850,"ok","input file cleared only after a clean parse"]]
+},
+{
+  k:"a2", stage:2, primary:"a2", on:["a2"], wires:["w_s2"], dur:3400,
+  label:"STAGE 02 / 07", file:"Agents/A2_CV_Reader_Agent.py", title:"CV reader",
+  role:"<b>pypdf</b> lifts the raw text out of your CV, and then two calls run. The first returns a typed <b>ProfileSet</b>. The second returns a markdown layout template, so that the rewrite later lands back in <b>your</b> structure rather than a generic one.",
+  chain:[{models:["qwen3-next-80b","gemini-2.5-flash","claude-haiku-4.5"], live:0, rest:POOL_TAIL}],
+  emits:["state.Profile_set","state.CVtemplate_path"],
+  instH:"Parsed",
+  facts:[["roles","5",""],["skills","24",""],["pages","2",""],["layout","captured","good"]],
+  logs:[[0,"head","A2 - CV reader"],
+        [500,"dim","extract_cv_text · Daniel Cruz - Curriculum.pdf"],
+        [1150,"dim","run_llm_json → qwen/qwen3-next-80b-a3b-instruct"],
+        [2050,"val","Candidate: Daniel Cruz | 24 skills, 5 roles"],
+        [2650,"dim","run_llm_text → layout template"],
+        [3050,"ok","template → RESULTS/CV-template/layout.md"]]
+},
+{
+  k:"a3", stage:3, primary:"a3", on:["a3"], wires:["w_a1","w_a2"], dur:3900,
+  label:"STAGE 03 / 07", file:"Agents/A3_Match_Agent.py", title:"Match analysis",
+  role:"Weighs the profile against the job and returns a score, along with the concrete recommendations and pointers that the editors will work from. This is the only agent that can stop the run.",
+  chain:[{models:["deepseek-v3.2","gpt-5-mini","claude-haiku-4.5"], live:0, rest:POOL_TAIL}],
+  emits:["state.match_score","state.reco","state.pointers"],
+  instH:"Match score", meter:{val:0.78, thr:0.65},
+  logs:[[0,"head","A3 - match analysis"],
+        [600,"dim","run_llm_json → deepseek/deepseek-v3.2"],
+        [2200,"val","match_score = 0.78 (threshold 0.65)"],
+        [3050,"dim","reco: 6 items | pointers: 9 items"]]
+},
+{
+  k:"gate", stage:3, primary:"gate", on:[], wires:["w_gt"], mark:["gate"], dur:2500,
+  label:"GATE", kind:"mark", file:"Workflow_BeeAI.py", title:"The gate",
+  role:"Below the threshold, the pipeline stops and asks before spending a single token on drafts. Answer <b>n</b> and nothing is written. This is the cheapest decision in the system, so it happens first.",
+  chainH:"Control flow", chain:"none", chainNote:"no model (plain Python)",
+  emitsH:"Effect", emits:["stop · or · continue"],
+  instH:"Decision",
+  facts:[["0.78","≥ 0.65","good"],["route","continue","good"],["halt path","not taken",""]],
+  logs:[[300,"val","[GATE] 0.78 ≥ 0.65 (continue)"],
+        [1400,"dim","drafting authorised"]]
+},
+{
+  k:"a4", stage:4, primary:"a4", on:["a4"], wires:["w_f4"], dur:3700,
+  label:"STAGE 04 / 07", file:"Agents/A4_CV_Writer_Agent.py", title:"CV editor",
+  role:"There are two stages here, and two models. A reasoning model plans which experience to foreground, and then a non-reasoning model writes the draft into your captured layout. Splitting them keeps the deliberation out of the document and gives the writer the whole token budget.",
+  chain:[{tag:"think", models:["deepseek-v3.2","gpt-5-mini"], live:0, rest:POOL_TAIL},
+         {tag:"write", models:["kimi-k2","qwen3-next-80b","llama-3.3-70b"], live:0, note:"non-reasoning tail"}],
+  emits:["state.cv_draft"],
+  instH:"Draft",
+  facts:[["plan","11 directives",""],["draft","4,206 chars","hi"],["layout","preserved","good"]],
+  logs:[[0,"head","A4 / A5 - first drafts"],
+        [500,"dim","A4 think → deepseek/deepseek-v3.2"],
+        [1700,"dim","A4 write → moonshotai/kimi-k2-0905"],
+        [3050,"val","CV draft: 4,206 chars"]]
+},
+{
+  k:"a5", stage:5, primary:"a5", on:["a5"], wires:["w_f5"], dur:3500,
+  label:"STAGE 05 / 07", file:"Agents/A5_CoverLetter_Agent.py", title:"Cover letter",
+  role:"This is the same split, tuned for prose. The writer chain stays non-reasoning all the way down its fallbacks, so even a failover mid-run cannot leak a reasoning stream into the letter.",
+  chain:[{tag:"think", models:["deepseek-v3.2","gpt-5-mini"], live:0, rest:POOL_TAIL},
+         {tag:"write", models:["kimi-k2","llama-3.3-70b","qwen3-next-80b"], live:0, note:"non-reasoning tail"}],
+  emits:["state.cl_draft"],
+  instH:"Draft",
+  facts:[["temperature","0.3",""],["draft","2,918 chars","hi"],["reasoning leak","none","good"]],
+  logs:[[400,"dim","A5 think → deepseek/deepseek-v3.2"],
+        [1600,"dim","A5 write → moonshotai/kimi-k2-0905"],
+        [2950,"val","Cover-letter draft: 2,918 chars"]]
+},
+{
+  k:"a6a", stage:6, primary:"a6", on:["a6"], wires:["w_46","w_56"], dur:4100,
+  label:"STAGE 06 / 07", file:"Agents/A6_Validation_Agent.py", title:"Validation loop",
+  role:"A judge reads both drafts and returns verbatim find/replace patches. <b>Pass 1 finds the problems and freezes the list.</b> Every later pass only re-checks that same list, so the loop can only shrink toward approval instead of finding fresh work forever.",
+  chain:[{models:["claude-haiku-4.5","gpt-5-mini","deepseek-v3.2"], live:0, rest:POOL_TAIL}],
+  emits:["state.errors","state.patches","state.is_approved"],
+  instH:"Pass 1 of 5",
+  facts:[["cv patches","4","hi"],["cl patches","3","hi"],["applied","6 / 7",""],["unmatched","1","bad"]],
+  logs:[[0,"head","A6 - validation loop"],
+        [600,"dim","run_llm_json → anthropic/claude-haiku-4.5"],
+        [1900,"warn","pass 1/5: approved=False | cv_patches=4 cl_patches=3"],
+        [2700,"dim","apply_patches: deterministic string replace"],
+        [3450,"val","applied 6/7 targeted patches (unmatched: cv=1 cl=0)"]]
+},
+{
+  k:"a6b", stage:6, primary:"a6", on:["a6","a4"], wires:["w_l4","w_l5"], dur:3600,
+  label:"STAGE 06 / 07", file:"Agents/A6_Validation_Agent.py", title:"Validation loop",
+  role:"Patches are applied by deterministic string replace, which is cheap and cannot drift. Only the snippets that fail to match verbatim are escalated back to the editor that produced them, so the rest of the draft is never rewritten.",
+  chain:[{models:["claude-haiku-4.5","gpt-5-mini","deepseek-v3.2"], live:0, rest:POOL_TAIL}],
+  emits:["state.cv_draft","state.is_approved"],
+  instH:"Pass 2 of 5",
+  facts:[["escalated","1 → run_A4_fix","hi"],["cv patches","0","good"],["cl patches","0","good"],["approved","true","good"]],
+  logs:[[400,"dim","escalate 1 unmatched → run_A4_fix"],
+        [1600,"dim","run_llm_json → anthropic/claude-haiku-4.5"],
+        [2700,"ok","pass 2/5: approved=True | cv_patches=0 cl_patches=0"]]
+},
+{
+  k:"a7", stage:7, primary:"a7", on:["a7"], wires:["w_67"], mark:["appr"], dur:3300,
+  label:"STAGE 07 / 07", file:"Agents/A7_PDF_Formatter_Agent.py", title:"PDF export",
+  role:"No model runs at this stage. The approved markdown goes through <b>xhtml2pdf</b> and lands as two files. If the loop had run out of passes, the best drafts would still be exported, so the run never ends with nothing.",
+  chainH:"Toolchain", chain:"none", chainNote:"no model (xhtml2pdf)",
+  emits:["state.final_cv_path","state.final_cl_path"],
+  instH:"Writing files",
+  facts:[["engine","xhtml2pdf",""],["pages","2 + 1",""],["source","approved markdown","good"]],
+  logs:[[0,"head","A7 - PDF formatter"],
+        [600,"dim","write_pdf · markdown → xhtml2pdf"],
+        [1800,"val","CV  PDF: RESULTS/CV-PDF/…"],
+        [2550,"val","CL  PDF: RESULTS/Cover Letter - PDF/…"]]
+},
+{
+  k:"out", stage:7, primary:"a7", on:["a7"], wires:["w_o1","w_o2"], mark:["out"], dur:4400,
+  label:"COMPLETE", kind:"mark", file:"Workflow_BeeAI.py", title:"Pipeline complete",
+  role:"One pasted job post and one PDF go in, and a tailored CV and cover letter come out. There are seven agents and seven model chains, each picked for the work that agent actually does, and every chain can fail over without stopping the run.",
+  chainH:"Run summary", chain:[{models:["7 agents","13 model calls","1 API key"], live:-1}],
+  emitsH:"Artefacts", emits:["RESULTS/CV-PDF/…","RESULTS/Cover Letter - PDF/…"],
+  instH:"Run",
+  facts:[["wall clock","2m 41s","hi"],["validation","2 of 5 passes","good"],["halted","no","good"],["full rewrites","0","good"]],
+  logs:[[500,"head","PIPELINE COMPLETE"],
+        [1300,"ok","2 documents written · 2m 41s"]]
+}
+];
+
+var STEPS = [
+  {k:"A1", l:"Job intake"}, {k:"A2", l:"CV reader"}, {k:"A3", l:"Match"},
+  {k:"A4", l:"CV editor"},  {k:"A5", l:"Letter"},    {k:"A6", l:"Validation"},
+  {k:"A7", l:"Export"}
+];
+
+/* ── 3. engine ──────────────────────────────────────────────────────── */
+var RUN_SCALE = 4.6;                 /* animation seconds to run seconds */
+var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+var card = document.getElementById("card");
+var rail = document.getElementById("rail");
+var logEl = document.getElementById("log");
+var foot = document.getElementById("foot");
+var elStage = document.getElementById("rdStage");
+var elFile = document.getElementById("rdFile");
+var elTitle = document.getElementById("rdTitle");
+var elRole = document.getElementById("rdRole");
+var elChain = document.getElementById("rdChain");
+var elEmits = document.getElementById("rdEmits");
+var elInstH = document.getElementById("instH");
+var elInst = document.getElementById("instBody");
+var elRun = document.getElementById("runlabel");
+var btnToggle = document.getElementById("toggle");
+var btnRestart = document.getElementById("restart");
+
+rail.innerHTML = buildRail();
+
+var svgEl = {};
+["a1","a2","a3","a4","a5","a6","a7","gate","g_appr","g_loop","out1","out2"].forEach(function(id){
+  svgEl[id] = rail.querySelector("#" + id);
+});
+
+var beat = 0, tIn = 0, shown = 0, playing = !reduced, last = 0;
+
+function fmt(ms){
+  var s = Math.floor(ms / 1000);
+  return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+}
+function beatStart(i){
+  var t = 0;
+  for(var j = 0; j < i; j++) t += BEATS[j].dur;
+  return t;
+}
+
+/* ── rendering: readout ─────────────────────────────────────────────── */
+function renderChain(b){
+  var h = document.querySelectorAll(".cell-h")[0];
+  h.textContent = b.chainH || "Model chain";
+  if(b.chain === "none"){
+    elChain.innerHTML = '<span class="mchip rest">' + b.chainNote + "</span>";
+    return;
+  }
+  var out = "";
+  b.chain.forEach(function(row){
+    out += '<div class="mrow">';
+    if(row.tag) out += '<span class="mstage">' + row.tag + "</span>";
+    row.models.forEach(function(m, i){
+      if(i) out += '<span class="marrow">&rarr;</span>';
+      out += '<span class="mchip' + (i === row.live ? " live" : "") + '">' + m + "</span>";
+    });
+    if(row.rest) out += '<span class="marrow">&rarr;</span><span class="mchip rest">' + row.rest + "</span>";
+    if(row.note) out += '<span class="mchip rest">' + row.note + "</span>";
+    out += "</div>";
+  });
+  elChain.innerHTML = out;
+}
+
+function renderEmits(b){
+  var h = document.querySelectorAll(".cell-h")[1];
+  h.textContent = b.emitsH || "Writes to state";
+  elEmits.innerHTML = b.emits.map(function(e){ return '<div class="emit">' + e + "</div>"; }).join("");
+}
+
+function renderInst(b, animate){
+  elInstH.textContent = b.instH;
+  if(b.meter){
+    elInst.innerHTML =
+      '<div class="meter">'
+      + '<span class="meter-num">' + b.meter.val.toFixed(2) + "</span>"
+      + '<span class="meter-track"><i class="meter-fill" id="mfill"></i>'
+      + '<span class="meter-tick" style="left:' + (b.meter.thr * 100) + '%"></span></span>'
+      + '<span class="meter-cap">threshold ' + b.meter.thr.toFixed(2) + "</span>"
+      + "</div>";
+    var f = document.getElementById("mfill");
+    if(animate && !reduced){ requestAnimationFrame(function(){ f.style.width = (b.meter.val * 100) + "%"; }); }
+    else { f.style.transition = "none"; f.style.width = (b.meter.val * 100) + "%"; }
+    return;
+  }
+  elInst.innerHTML = '<div class="facts">' + b.facts.map(function(f, i){
+    return '<span class="fact ' + (f[2] || "") + '" style="animation-delay:' + (animate ? i * 70 : 0) + 'ms">'
+      + f[0] + " <b>" + f[1] + "</b></span>";
+  }).join("") + "</div>";
+}
+
+function pushLog(entry, absMs, animate){
+  var d = document.createElement("div");
+  d.className = "ln " + entry[1];
+  if(!animate) d.style.animation = "none";
+  d.innerHTML = '<span class="t">' + fmt(absMs * RUN_SCALE) + '</span><span class="m"></span>';
+  d.lastChild.textContent = entry[2];
+  logEl.appendChild(d);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+/* ── rendering: rail ────────────────────────────────────────────────── */
+function firePulse(wid){
+  if(reduced) return;
+  var c = rail.querySelector("#pu_" + wid), m = rail.querySelector("#mo_" + wid);
+  if(!c || !m || !m.beginElement) return;
+  c.classList.add("go");
+  try { m.beginElement(); } catch(e){}
+  setTimeout(function(){ c.classList.remove("go"); }, 640);
+}
+
+function paintRail(i, animate){
+  var b = BEATS[i], lit = {}, marked = {}, j, w;
+  for(j = 0; j <= i; j++){
+    (BEATS[j].wires || []).forEach(function(x){ lit[x] = 1; });
+    (BEATS[j].mark || []).forEach(function(x){ marked[x] = 1; });
+  }
+  for(w in WIRES){
+    var g = rail.querySelector("#" + w);
+    var wasOn = g.classList.contains("on");
+    g.classList.toggle("on", !!lit[w]);
+    if(lit[w] && !wasOn && animate) firePulse(w);
+  }
+  svgEl.gate.classList.toggle("on", !!marked.gate);
+  svgEl.g_appr.classList.toggle("on", !!marked.appr);
+  svgEl.out1.classList.toggle("on", !!marked.out);
+  svgEl.out2.classList.toggle("on", !!marked.out);
+  svgEl.g_loop.classList.toggle("on", b.k === "a6b");
+
+  var pIdx = ORDER.indexOf(b.primary);
+  NODES.forEach(function(n){
+    var el = svgEl[n.id];
+    el.classList.toggle("on", b.on.indexOf(n.id) > -1);
+    el.classList.toggle("done", b.on.indexOf(n.id) === -1 && ORDER.indexOf(n.id) < pIdx);
+  });
+}
+
+function paintSteps(i){
+  var b = BEATS[i];
+  foot.querySelectorAll(".step").forEach(function(el, k){
+    var s = k + 1;
+    el.classList.toggle("now", s === b.stage);
+    el.classList.toggle("past", s < b.stage);
+    el.querySelector("i").style.width = s < b.stage ? "100%" : (s === b.stage ? "0%" : "0%");
+  });
+}
+
+/* ── beat transitions ───────────────────────────────────────────────── */
+function enterBeat(i, opts){
+  opts = opts || {};
+  beat = i; tIn = 0; shown = 0;
+  var b = BEATS[i];
+  elStage.textContent = b.label;
+  if(b.kind === "mark") elStage.setAttribute("data-kind", "mark");
+  else elStage.removeAttribute("data-kind");
+  elFile.textContent = b.file;
+  elTitle.textContent = b.title;
+  elRole.innerHTML = b.role;
+  renderChain(b); renderEmits(b); renderInst(b, !opts.instant);
+  paintRail(i, !opts.instant);
+  paintSteps(i);
+  if(opts.rebuildLog){
+    logEl.innerHTML = "";
+    for(var j = 0; j < i; j++){
+      var st = beatStart(j);
+      BEATS[j].logs.forEach(function(L){ pushLog(L, st + L[0], false); });
+    }
+  }
+}
+
+function jumpToStage(stageNo){
+  for(var i = 0; i < BEATS.length; i++){
+    if(BEATS[i].stage === stageNo){ enterBeat(i, {rebuildLog:true}); return; }
+  }
+}
+function restart(){ enterBeat(0, {rebuildLog:true}); }
+
+/* ── ticker ─────────────────────────────────────────────────────────── */
+function tick(now){
+  var dt = Math.min(now - (last || now), 90);
+  last = now;
+  if(playing){
+    var b = BEATS[beat];
+    tIn += dt;
+    while(shown < b.logs.length && b.logs[shown][0] <= tIn){
+      pushLog(b.logs[shown], beatStart(beat) + b.logs[shown][0], true);
+      shown++;
+    }
+    var stepEl = foot.querySelectorAll(".step")[b.stage - 1];
+    if(stepEl){
+      var sBeats = BEATS.filter(function(x){ return x.stage === b.stage; });
+      var total = sBeats.reduce(function(a, x){ return a + x.dur; }, 0);
+      var before = 0;
+      for(var q = 0; q < sBeats.length && sBeats[q] !== b; q++) before += sBeats[q].dur;
+      stepEl.querySelector("i").style.width = Math.min(100, ((before + tIn) / total) * 100) + "%";
+    }
+    elRun.textContent = "sample run · " + fmt((beatStart(beat) + tIn) * RUN_SCALE);
+    if(tIn >= b.dur){
+      if(beat + 1 < BEATS.length) enterBeat(beat + 1);
+      else restart();
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ── controls ───────────────────────────────────────────────────────── */
+function setPlaying(v){
+  playing = v;
+  card.setAttribute("data-paused", v ? "false" : "true");
+  btnToggle.textContent = v ? "Pause" : "Play";
+  btnToggle.setAttribute("aria-label", v ? "Pause the run" : "Play the run");
+}
+btnToggle.addEventListener("click", function(){ setPlaying(!playing); });
+btnRestart.addEventListener("click", function(){ restart(); setPlaying(true); });
+
+foot.innerHTML = STEPS.map(function(s, i){
+  return '<button class="step" data-s="' + (i + 1) + '" aria-label="Go to stage ' + s.k + ', ' + s.l + '">'
+    + '<span class="step-bar"><i></i></span>'
+    + '<span class="step-k">' + s.k + "</span>"
+    + '<span class="step-l">' + s.l + "</span></button>";
+}).join("");
+foot.addEventListener("click", function(e){
+  var b = e.target && e.target.closest && e.target.closest(".step");
+  if(b) jumpToStage(+b.dataset.s);
+});
+
+rail.addEventListener("click", function(e){
+  var n = e.target && e.target.closest && e.target.closest(".node");
+  if(n) jumpToStage(NODES.findIndex(function(x){ return x.id === n.id; }) + 1);
+});
+rail.addEventListener("keydown", function(e){
+  var n = e.target && e.target.closest && e.target.closest(".node");
+  if(n && (e.key === "Enter" || e.key === " ")){
+    e.preventDefault();
+    jumpToStage(NODES.findIndex(function(x){ return x.id === n.id; }) + 1);
+  }
+});
+
+function within(t, sel){ return !!(t && t.closest && t.closest(sel)); }
+
+card.addEventListener("keydown", function(e){
+  if(within(e.target, "input, textarea, [contenteditable]")) return;
+  if(e.key === "ArrowRight"){ e.preventDefault(); enterBeat(Math.min(beat + 1, BEATS.length - 1), {rebuildLog:true}); }
+  else if(e.key === "ArrowLeft"){ e.preventDefault(); enterBeat(Math.max(beat - 1, 0), {rebuildLog:true}); }
+  else if(e.key === " " && !within(e.target, "button")){ e.preventDefault(); setPlaying(!playing); }
+});
+
+/* ── go ─────────────────────────────────────────────────────────────── */
+enterBeat(0, {rebuildLog:true, instant:reduced});
+setPlaying(!reduced);
+if(reduced) elRun.textContent = "sample run · paused";
+requestAnimationFrame(tick);
+
+})();
+</script>
+</body>
+</html>

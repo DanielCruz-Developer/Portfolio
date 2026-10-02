@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IBM Courses | DanielC Portfolio</title>
+<meta name="description" content="The nine verifiable courses behind Daniel Cruz&#x27;s IBM RAG and Agentic AI Professional Certificate.">
+<meta property="og:title" content="IBM Courses | DanielC Portfolio">
+<meta property="og:description" content="AI Developer · RAG &amp; Agentic Systems · Cybersecurity · 11 verifiable credentials.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231E293B'/><text x='50' y='68' font-size='52' font-family='monospace' font-weight='700' text-anchor='middle' fill='%23DDB892'>DC</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Palette
+       cream       #FAF7F2  page background
+       slate navy  #1E293B  text, and the dark bands (projects, marquee, chat header)
+       beige       #DDB892  hero wash, card highlights
+       terracotta  #C05621  buttons, badges, links
+       sage        #84A98C  icons, tags, secondary accents
+     --sage-ink is a deeper sage for sage-colored text on cream, which needs
+     the contrast. --accent-rgb feeds every translucent terracotta tint. */
+  --bg:#FAF7F2;
+  --bg-2:#F3ECE2;
+  --card:#FFFFFF;
+  --card-2:#F7F2EA;
+  --border:rgba(30,41,59,.10);
+  --border-strong:rgba(30,41,59,.20);
+  --text:#1E293B;
+  --text-soft:#3D4A5E;
+  --muted:#5B6678;
+  --muted-2:#8A929F;
+  --navy:#1E293B;
+  --beige:#DDB892;
+  --beige-rgb:221,184,146;
+  --sage:#84A98C;
+  --sage-rgb:132,169,140;
+  --sage-ink:#557A5E;
+  --accent:#C05621;
+  --accent-rgb:192,86,33;
+  --accent-deep:#9C4318;
+  --on-accent:#FFFFFF;
+  --accent-dim:rgba(192,86,33,.10);
+  --accent-glow:rgba(192,86,33,.32);
+  --font-head:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --nav-h:72px;
+  --radius:16px;
+  --container:1180px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 16px)}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--font-body);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+::selection{background:var(--accent);color:var(--on-accent)}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#DCCFBE;border-radius:6px}
+::-webkit-scrollbar-thumb:hover{background:#C9B8A2}
+a{color:var(--accent);text-decoration:none}
+img{max-width:100%;display:block}
+.container{max-width:var(--container);margin:0 auto;padding:0 28px}
+
+/* ---------- Nav ---------- */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);
+  display:flex;align-items:center;
+  transition:background .3s ease,border-color .3s ease,backdrop-filter .3s ease;
+  border-bottom:1px solid transparent;
+}
+.nav.scrolled{background:rgba(250,247,242,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%}
+.logo{font-family:var(--font-mono);font-weight:600;font-size:19px;letter-spacing:-.02em;color:var(--text);display:flex;align-items:center;gap:2px}
+.logo .dc{color:var(--text)}
+.logo .dot{color:var(--accent)}
+.logo .pf{color:var(--muted);font-weight:400}
+.logo:hover .pf{color:var(--text)}
+.nav-links{display:flex;gap:6px;align-items:center}
+.nav-links a{
+  font-family:var(--font-mono);font-size:13.5px;color:var(--muted);
+  padding:8px 14px;border-radius:8px;transition:color .2s,background .2s;
+}
+.nav-links a:hover{color:var(--text);background:rgba(30,41,59,.06)}
+.nav-links a.active{color:var(--accent)}
+.nav-cta{
+  font-family:var(--font-mono);font-size:13px;color:var(--accent) !important;
+  border:1px solid rgba(var(--accent-rgb),.4);border-radius:8px;padding:8px 16px !important;margin-left:8px;
+  transition:background .2s,box-shadow .2s;
+}
+.nav-cta:hover{background:var(--accent-dim) !important;box-shadow:0 0 18px rgba(var(--accent-rgb),.2)}
+.burger{display:none;background:none;border:1px solid var(--border);border-radius:8px;padding:9px 10px;cursor:pointer}
+.burger span{display:block;width:20px;height:2px;background:var(--text);margin:4px 0;transition:transform .25s,opacity .25s}
+.burger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0}
+.burger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.mobile-menu{
+  display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:99;
+  background:rgba(250,247,242,.98);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);
+  flex-direction:column;padding:12px 28px 22px;gap:2px;
+}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-family:var(--font-mono);font-size:15px;color:var(--muted);padding:12px 4px;border-bottom:1px solid rgba(30,41,59,.07)}
+.mobile-menu a:hover{color:var(--accent)}
+
+/* ---------- Hero ---------- */
+.hero{
+  background:linear-gradient(180deg,#F2E3D0 0%,#F6ECDF 60%,var(--bg) 100%);
+  position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;
+  padding-top:var(--nav-h);overflow:hidden;
+}
+.hero-bg{position:absolute;inset:0;pointer-events:none}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(30,41,59,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(30,41,59,.06) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 70% at 50% 40%,black 30%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 40%,black 30%,transparent 75%);
+}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.8;will-change:transform}
+.orb-1{width:520px;height:520px;background:radial-gradient(circle,rgba(var(--beige-rgb),.75),transparent 65%);top:-8%;right:-6%}
+.orb-2{width:460px;height:460px;background:radial-gradient(circle,rgba(var(--sage-rgb),.35),transparent 65%);bottom:4%;left:-10%}
+.hero-content{position:relative;z-index:2}
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--font-mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+  border:1px solid rgba(var(--accent-rgb),.3);border-radius:999px;padding:7px 16px;background:rgba(var(--accent-rgb),.06);
+}
+.hero-kicker .pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:dotpulse 2.2s ease-in-out infinite}
+@keyframes dotpulse{0%,100%{box-shadow:0 0 0 0 rgba(var(--accent-rgb),.5)}50%{box-shadow:0 0 0 6px rgba(var(--accent-rgb),0)}}
+.hero h1{
+  font-family:var(--font-head);font-weight:700;
+  font-size:clamp(52px,9.5vw,116px);line-height:.98;letter-spacing:-.03em;
+  margin:26px 0 10px;
+}
+.hero h1 .line{display:block;overflow:hidden}
+.hero h1 .line>span{display:inline-block}
+.hero h1 .accent-line{color:transparent;background:linear-gradient(100deg,var(--accent) 0%,#D9783C 50%,var(--accent-deep) 105%);-webkit-background-clip:text;background-clip:text}
+.hero-sub{
+  font-family:var(--font-mono);font-size:clamp(15px,2vw,19px);color:var(--muted);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:26px;
+}
+.hero-sub .sep{color:var(--muted-2)}
+.hero-desc{max-width:640px;font-size:clamp(16px,1.6vw,18.5px);font-weight:400;color:var(--text-soft);margin:0 0 40px}
+.hero-desc strong{color:var(--text);font-weight:500}
+.hero-actions{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;cursor:pointer;
+  font-family:var(--font-mono);font-size:14.5px;font-weight:500;border-radius:10px;padding:14px 26px;
+  transition:transform .2s,box-shadow .25s,background .2s,border-color .2s;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:var(--on-accent);border:1px solid var(--accent)}
+.btn-primary:hover{box-shadow:0 6px 28px var(--accent-glow);transform:translateY(-2px);color:var(--on-accent)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border-strong)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.hero-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);
+  box-shadow:0 20px 50px -30px rgba(30,41,59,.35);
+  border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+  margin-top:64px;
+}
+.stat{background:rgba(255,255,255,.72);padding:26px 26px 22px;transition:background .3s}
+.stat:hover{background:var(--card)}
+.stat-num{font-family:var(--font-head);font-weight:700;font-size:clamp(30px,3.4vw,42px);line-height:1;color:var(--text)}
+.stat-num .plus{color:var(--accent)}
+.stat-label{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+.scroll-hint{
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;
+  display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted-2);
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+}
+.scroll-hint .mouse{width:22px;height:36px;border:1.5px solid var(--muted-2);border-radius:12px;position:relative}
+.scroll-hint .mouse::after{
+  content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;margin-left:-1.5px;border-radius:2px;
+  background:var(--accent);animation:wheel 1.8s ease-in-out infinite;
+}
+@keyframes wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:0}}
+
+/* ---------- Marquee ---------- */
+.marquee{
+  background:var(--navy);overflow:hidden;padding:18px 0;position:relative;
+}
+.marquee-track{display:flex;gap:56px;width:max-content;animation:marquee 36s linear infinite}
+.marquee:hover .marquee-track{animation-play-state:paused}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-item{font-family:var(--font-mono);font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:rgba(250,247,242,.78);display:flex;align-items:center;gap:56px;white-space:nowrap}
+.marquee-item::after{content:"◆";color:var(--beige);font-size:9px}
+
+/* ---------- Sections ---------- */
+section{position:relative}
+.section{padding:110px 0}
+.section-head{margin-bottom:56px}
+.section-kicker{font-family:var(--font-mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:12px}
+.section-kicker::before{content:"";width:34px;height:1px;background:var(--accent)}
+.section-title{font-family:var(--font-head);font-weight:700;font-size:clamp(32px,4.6vw,52px);letter-spacing:-.02em;line-height:1.08;margin:16px 0 0}
+.section-sub{color:var(--muted);max-width:620px;margin:16px 0 0;font-weight:300;font-size:17px}
+
+/* ---------- About ---------- */
+.about-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:64px;align-items:start}
+.about-text p{font-size:17.5px;font-weight:400;color:var(--text-soft);margin:0 0 20px}
+.about-text p strong{color:var(--text);font-weight:500}
+.about-points{display:flex;flex-direction:column;gap:14px;margin-top:28px}
+.about-point{display:flex;gap:14px;align-items:flex-start}
+.about-point svg{flex:none;margin-top:3px;color:var(--sage-ink)}
+.about-point span{color:var(--text-soft);font-size:15.5px}
+.exp-card{
+  background:linear-gradient(160deg,var(--card) 0%,var(--card-2) 100%);box-shadow:0 24px 50px -34px rgba(30,41,59,.4);
+  border:1px solid var(--border);border-radius:var(--radius);padding:34px;position:relative;overflow:hidden;
+}
+.exp-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--beige),var(--accent) 45%,transparent 85%)}
+.exp-role{font-family:var(--font-head);font-weight:600;font-size:21px}
+.exp-org{font-family:var(--font-mono);font-size:13px;color:var(--accent);margin-top:6px;letter-spacing:.06em}
+.exp-list{margin:20px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:13px}
+.exp-list li{position:relative;padding-left:20px;font-size:14.5px;color:var(--muted)}
+.exp-list li::before{content:"▹";position:absolute;left:0;color:var(--sage-ink)}
+
+/* ---------- Featured credentials ---------- */
+.featured-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.cred-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .35s;
+  display:flex;flex-direction:column;
+}
+.cred-card:hover{transform:translateY(-6px);border-color:var(--beige);box-shadow:0 28px 50px -24px rgba(30,41,59,.35),0 0 0 1px rgba(var(--beige-rgb),.7)}
+.cred-img{position:relative;background:#fff;overflow:hidden}
+.cred-img img{width:100%;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.cred-card:hover .cred-img img{transform:scale(1.03)}
+.cred-body{padding:28px 30px 30px;display:flex;flex-direction:column;gap:14px;flex:1}
+.cred-tags{display:flex;gap:8px;flex-wrap:wrap}
+.tag{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--sage-ink);background:rgba(var(--sage-rgb),.14);border:1px solid rgba(var(--sage-rgb),.45);
+  border-radius:6px;padding:4px 10px;
+}
+.tag.blue{color:#8A5A2E;background:rgba(var(--beige-rgb),.28);border-color:rgba(var(--beige-rgb),.75)}
+.cred-title{font-family:var(--font-head);font-weight:600;font-size:23px;line-height:1.2;margin:0}
+.cred-desc{color:var(--muted);font-size:15px;margin:0;flex:1}
+.cred-meta{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+  border-top:1px solid var(--border);padding-top:16px;
+  font-family:var(--font-mono);font-size:12.5px;color:var(--muted-2);
+}
+.cred-meta .code{color:var(--accent)}
+.cred-card.has-link{position:relative;cursor:pointer}
+.cred-link{color:inherit}
+.cred-link::after{content:"";position:absolute;inset:0;z-index:2;border-radius:var(--radius)}
+.cred-link:focus-visible{outline:none}
+.cred-card.has-link:focus-within{outline:2px solid var(--accent);outline-offset:4px}
+.cred-cta{display:inline-flex;align-items:center;gap:8px;font:600 13.5px var(--font-mono);color:var(--accent);margin-top:2px}
+.cred-cta svg{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.cred-card.has-link:hover .cred-cta svg{transform:translateX(5px)}
+.cred-card.has-link:hover .cred-title{color:var(--accent)}
+
+/* ---------- Courses page header ---------- */
+.cpage-hero{position:relative;overflow:hidden;padding:calc(var(--nav-h) + 72px) 0 40px;background:linear-gradient(180deg,#F2E3D0 0%,var(--bg) 100%)}
+.cpage-grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:56px;align-items:center}
+.cpage-back{display:inline-flex;align-items:center;gap:8px;font:500 13.5px var(--font-mono);color:var(--muted);margin-bottom:28px;padding:7px 12px 7px 8px;margin-left:-8px;border-radius:8px;transition:color .2s,background .2s}
+.cpage-back:hover{color:var(--text);background:rgba(30,41,59,.06)}
+.cpage-back svg{transition:transform .2s}.cpage-back:hover svg{transform:translateX(-3px)}
+.cpage-title{font-family:var(--font-head);font-weight:700;font-size:clamp(34px,4.6vw,54px);line-height:1.06;letter-spacing:-.025em;margin:16px 0 18px}
+.cpage-desc{color:var(--text-soft);font-weight:400;font-size:17px;margin:0 0 30px;max-width:560px}
+.cpage-cert{border-radius:var(--radius);overflow:hidden;background:#fff;border:1px solid var(--border-strong);
+  box-shadow:0 40px 80px -36px rgba(30,41,59,.5),0 0 0 1px rgba(var(--beige-rgb),.6),0 0 70px -20px rgba(var(--beige-rgb),.8);
+  transform:perspective(1200px) rotateY(-6deg) rotateX(2deg);transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.cpage-cert:hover{transform:none}
+.cpage-hero+.section{padding-top:70px}
+
+/* ---------- Courses ---------- */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:40px}
+.filter-btn{
+  font-family:var(--font-mono);font-size:13px;cursor:pointer;
+  color:var(--muted);background:transparent;border:1px solid var(--border-strong);border-radius:999px;padding:9px 20px;
+  transition:all .25s;
+}
+.filter-btn:hover{color:var(--text);border-color:var(--muted)}
+.filter-btn.active{color:var(--on-accent);background:var(--accent);border-color:var(--accent);font-weight:600}
+.courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.course-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .35s,opacity .3s;
+}
+.course-card:hover{transform:translateY(-5px);border-color:var(--beige);box-shadow:0 24px 44px -22px rgba(30,41,59,.35)}
+.course-card.hidden{display:none}
+.course-img{background:#fff;overflow:hidden}
+.course-img img{width:100%;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.course-card:hover .course-img img{transform:scale(1.04)}
+.course-body{padding:22px 24px 24px;display:flex;flex-direction:column;gap:10px;flex:1}
+.course-cat{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--sage-ink)}
+.course-title{font-family:var(--font-head);font-weight:600;font-size:17.5px;line-height:1.3;margin:0;flex:1}
+.course-meta{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  border-top:1px solid var(--border);padding-top:14px;margin-top:6px;
+  font-family:var(--font-mono);font-size:12px;color:var(--muted-2);
+}
+.course-meta a{color:var(--muted);transition:color .2s;display:inline-flex;align-items:center;gap:5px}
+.course-meta a:hover{color:var(--accent)}
+
+/* ---------- Capabilities ---------- */
+.section-alt{background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.cap-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:30px 28px;
+  position:relative;overflow:hidden;transition:transform .3s,border-color .3s;
+}
+.cap-card::after{
+  content:"";position:absolute;inset:0;opacity:0;transition:opacity .35s;pointer-events:none;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(var(--beige-rgb),.3),transparent 45%);
+}
+.cap-card:hover{transform:translateY(-4px);border-color:var(--beige)}
+.cap-card:hover::after{opacity:1}
+.cap-num{font-family:var(--font-mono);font-size:13px;color:var(--accent);letter-spacing:.1em}
+.cap-title{font-family:var(--font-head);font-weight:600;font-size:19px;margin:12px 0 8px;line-height:1.3}
+.cap-desc{color:var(--muted);font-size:14.5px;margin:0}
+
+/* ---------- Stack ---------- */
+.stack-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.stack-card{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 22px;
+  transition:transform .3s,border-color .3s,box-shadow .3s;
+}
+.stack-card:hover{transform:translateY(-4px);border-color:var(--beige);box-shadow:0 18px 34px -20px rgba(30,41,59,.35)}
+.stack-name{font-family:var(--font-mono);font-weight:600;font-size:16.5px;color:var(--text)}
+.stack-name::before{content:"$ ";color:var(--sage-ink)}
+.stack-role{font-size:13.5px;color:var(--muted);margin-top:8px}
+
+/* ---------- Contact ---------- */
+.contact-wrap{text-align:center;max-width:720px;margin:0 auto}
+.contact-wrap .section-kicker{justify-content:center}
+.contact-wrap .section-kicker::after{content:"";width:34px;height:1px;background:var(--accent)}
+.contact-title{font-family:var(--font-head);font-weight:700;font-size:clamp(36px,5.4vw,60px);letter-spacing:-.02em;line-height:1.06;margin:18px 0 20px}
+.contact-title .hl{color:transparent;background:linear-gradient(100deg,var(--accent),#D9783C 60%,var(--accent-deep));-webkit-background-clip:text;background-clip:text}
+.contact-sub{color:var(--muted);font-size:17px;font-weight:300;margin:0 0 42px}
+.contact-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.verify-note{
+  margin-top:56px;display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--font-mono);font-size:13px;color:var(--muted);
+  border:1px solid var(--border);border-radius:10px;padding:13px 20px;background:var(--card);
+}
+.verify-note svg{color:var(--sage-ink);flex:none}
+footer{border-top:1px solid var(--border);padding:34px 0}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.footer-inner .copy{font-family:var(--font-mono);font-size:12.5px;color:var(--muted-2)}
+.footer-links{display:flex;gap:22px}
+.footer-links a{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+
+/* ---------- Chat widget ---------- */
+.chat-fab{
+  position:fixed;right:24px;bottom:24px;z-index:200;
+  width:62px;height:62px;border-radius:50%;cursor:pointer;
+  background:linear-gradient(140deg,var(--accent) 0%,var(--accent-deep) 100%);color:var(--on-accent);border:none;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 30px rgba(var(--accent-rgb),.35),0 4px 10px rgba(30,41,59,.25);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;
+}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 14px 38px rgba(var(--accent-rgb),.45),0 4px 10px rgba(0,0,0,.4)}
+.chat-fab:active{transform:scale(.95)}
+.chat-fab::before{
+  content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid rgba(var(--accent-rgb),.5);
+  animation:fabpulse 2.6s ease-out infinite;pointer-events:none;
+}
+@keyframes fabpulse{0%{opacity:.7;transform:scale(1)}70%,100%{opacity:0;transform:scale(1.28)}}
+.chat-fab svg{transition:transform .3s,opacity .2s;position:absolute}
+.chat-fab .icon-close{opacity:0;transform:rotate(-90deg) scale(.5)}
+.chat-fab.open .icon-chat{opacity:0;transform:rotate(90deg) scale(.5)}
+.chat-fab.open .icon-close{opacity:1;transform:none}
+.chat-fab.open::before{animation:none;opacity:0}
+.chat-panel{
+  position:fixed;right:24px;bottom:100px;z-index:199;
+  width:380px;max-width:calc(100vw - 32px);height:540px;max-height:calc(100svh - 130px);
+  background:var(--card);border:1px solid var(--border-strong);border-radius:18px;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 30px 70px -20px rgba(30,41,59,.45);
+  opacity:0;transform:translateY(16px) scale(.97);pointer-events:none;
+  transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.chat-panel.open{opacity:1;transform:none;pointer-events:auto}
+.chat-header{
+  display:flex;align-items:center;gap:12px;padding:16px 18px;
+  background:linear-gradient(140deg,var(--navy),#2B3A52);border-bottom:1px solid var(--border);
+}
+.chat-avatar{
+  width:38px;height:38px;border-radius:50%;flex:none;
+  background:rgba(var(--beige-rgb),.14);border:1px solid rgba(var(--beige-rgb),.5);color:var(--beige);
+  display:flex;align-items:center;justify-content:center;
+}
+.chat-name{font-family:var(--font-head);font-weight:600;font-size:15.5px;line-height:1.2;color:#FAF7F2}
+.chat-status{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--sage);margin-top:3px}
+.chat-status::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--sage);animation:dotpulse 2.2s infinite}
+.chat-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.chat-body::-webkit-scrollbar{width:6px}
+.msg{max-width:86%;padding:11px 14px;border-radius:14px;font-size:14.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:break-word}
+.msg.bot{align-self:flex-start;background:var(--card-2);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--text-soft)}
+.msg.user{align-self:flex-end;background:var(--accent);color:var(--on-accent);border-bottom-right-radius:4px}
+.msg.typing{display:flex;gap:5px;align-items:center;padding:14px 16px}
+.msg.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:typing 1.2s ease-in-out infinite}
+.msg.typing i:nth-child(2){animation-delay:.15s}
+.msg.typing i:nth-child(3){animation-delay:.3s}
+@keyframes typing{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.chat-suggestions{display:flex;flex-direction:column;gap:8px}
+.chat-suggestions .sug-label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2)}
+.sug-btn{
+  text-align:left;cursor:pointer;font-family:var(--font-body);font-size:13.5px;color:var(--text-soft);
+  background:transparent;border:1px solid var(--border);border-radius:10px;padding:10px 13px;
+  transition:border-color .2s,background .2s;
+}
+.sug-btn:hover{border-color:rgba(var(--accent-rgb),.45);background:var(--accent-dim)}
+.chat-input-row{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--border);background:var(--card-2)}
+.chat-input{
+  flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:var(--font-body);font-size:14.5px;padding:11px 13px;outline:none;
+  transition:border-color .2s;
+}
+.chat-input:focus{border-color:rgba(var(--accent-rgb),.5)}
+.chat-send{
+  width:44px;height:44px;border-radius:10px;flex:none;cursor:pointer;
+  background:var(--accent);color:var(--on-accent);border:none;display:flex;align-items:center;justify-content:center;
+  transition:transform .2s,box-shadow .2s;
+}
+.chat-send:hover{transform:translateY(-1px);box-shadow:0 4px 14px var(--accent-glow)}
+.chat-send:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none}
+
+/* ---------- Projects ----------
+   Each card carries its own accent (--pa, and --pa-rgb for translucency), so
+   every effect below re-colors itself per project. */
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.section-projects{background:var(--bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden}
+.proj-backdrop{position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(45% 35% at 12% 0%,rgba(var(--beige-rgb),.30),transparent 70%),
+    radial-gradient(40% 35% at 92% 28%,rgba(var(--sage-rgb),.16),transparent 70%),
+    radial-gradient(45% 40% at 50% 105%,rgba(var(--beige-rgb),.22),transparent 70%)}
+.proj-backdrop::after{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(30,41,59,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(30,41,59,.045) 1px,transparent 1px);
+  background-size:52px 52px;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 18%,#000 82%,transparent)}
+.section-projects .container{position:relative}
+.proj-count{font:600 11px var(--font-mono);letter-spacing:.06em;color:var(--text);background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),.35);padding:2px 9px;border-radius:999px;margin-left:4px}
+
+.proj-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px}
+.proj-filter{font-family:var(--font-mono);font-size:13px;cursor:pointer;color:var(--muted);background:var(--card);border:1px solid var(--border-strong);border-radius:999px;padding:9px 18px;display:inline-flex;align-items:center;gap:8px;transition:color .25s,border-color .25s,background .25s}
+.proj-filter span{font-size:11px;color:var(--muted-2);transition:color .25s}
+.proj-filter:hover{color:var(--text);border-color:var(--muted)}
+.proj-filter.active{color:var(--on-accent);background:var(--accent);border-color:var(--accent);font-weight:600}
+.proj-filter.active span{color:var(--on-accent);opacity:.65}
+
+.proj-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+.proj-card{position:relative;display:flex;--pa-text:color-mix(in srgb,var(--pa) 62%,#1E293B)}
+.proj-card[hidden]{display:none}
+.proj-tilt{--rx:0deg;--ry:0deg;--mx:50%;--my:50%;--gx:-999px;--gy:-999px;
+  position:relative;flex:1;display:flex;flex-direction:column;border-radius:22px;isolation:isolate;
+  background:linear-gradient(180deg,var(--card),var(--card)) padding-box,
+             conic-gradient(from var(--ang),rgba(var(--pa-rgb),0) 0deg,rgba(var(--pa-rgb),0) 200deg,rgba(var(--pa-rgb),.95) 290deg,rgba(var(--pa-rgb),0) 360deg) border-box;
+  border:1px solid var(--border);
+  box-shadow:0 26px 50px -34px rgba(30,41,59,.35);
+  transform:perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition:transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .45s,border-color .45s}
+/* Edge light that follows the cursor across the whole grid. */
+.proj-tilt::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;z-index:4;
+  background:radial-gradient(360px circle at var(--gx) var(--gy),rgba(var(--pa-rgb),.85),transparent 45%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+/* Soft glare inside the hovered card. */
+.proj-tilt::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;opacity:0;transition:opacity .4s;
+  background:radial-gradient(520px circle at var(--mx) var(--my),rgba(var(--pa-rgb),.07),transparent 42%)}
+.proj-card:hover .proj-tilt,.proj-card:focus-within .proj-tilt{border-color:transparent;animation:projSpin 4.5s linear infinite;
+  box-shadow:0 40px 70px -36px rgba(30,41,59,.45),0 0 50px -18px rgba(var(--pa-rgb),.5)}
+.proj-card:hover .proj-tilt::after{opacity:1}
+.proj-card.is-featured .proj-tilt{border-color:transparent;animation:projSpin 9s linear infinite}
+@keyframes projSpin{to{--ang:360deg}}
+.proj-card:focus-within .proj-tilt{outline:2px solid rgba(var(--pa-rgb),.9);outline-offset:4px}
+
+.proj-media{position:relative;aspect-ratio:16/10;overflow:hidden;border-radius:21px 21px 0 0;background:#F1E8DC}
+.proj-cover{position:absolute;inset:0;display:grid;place-items:center;transition:opacity .5s,transform .7s cubic-bezier(.2,.8,.2,1);
+  background:
+    radial-gradient(70% 90% at 50% 120%,rgba(var(--pa-rgb),.38),transparent 62%),
+    radial-gradient(rgba(30,41,59,.08) 1px,transparent 1px) 0 0/18px 18px,
+    linear-gradient(160deg,#FBF6EF,#F0E6D9)}
+.proj-cover::after{content:"";position:absolute;inset:auto 0 0;height:45%;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.75))}
+.proj-blob{position:absolute;width:55%;aspect-ratio:1;border-radius:50%;left:-8%;top:-20%;filter:blur(40px);opacity:.45;
+  background:radial-gradient(circle,rgba(var(--pa-rgb),.75),transparent 65%);animation:projDrift 14s ease-in-out infinite alternate}
+.proj-blob.b2{left:auto;right:-12%;top:auto;bottom:-30%;width:62%;opacity:.4;animation-duration:18s;animation-direction:alternate-reverse;
+  background:radial-gradient(circle,rgba(var(--beige-rgb),.4),transparent 65%)}
+@keyframes projDrift{to{transform:translate(18%,22%) scale(1.15)}}
+.proj-icon,.proj-mono{position:relative;z-index:1;width:30%;max-width:132px;aspect-ratio:1;border-radius:24%;
+  filter:drop-shadow(0 24px 34px rgba(var(--pa-rgb),.55));transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.proj-mono{display:grid;place-items:center;font:700 clamp(28px,4vw,44px) var(--font-head);letter-spacing:-.04em;color:#fff;
+  background:linear-gradient(145deg,rgba(var(--pa-rgb),.95),rgba(var(--pa-rgb),.45));border:1px solid rgba(255,255,255,.18)}
+.proj-card:hover .proj-icon,.proj-card:hover .proj-mono{transform:translateY(-8px) scale(1.06)}
+.proj-frame{position:absolute;left:0;top:0;width:1280px;height:800px;border:0;transform-origin:0 0;pointer-events:none;opacity:0;transition:opacity .5s ease;background:#141C2A}
+.proj-media.live .proj-frame{opacity:1}
+.proj-media.live .proj-cover{opacity:0;transform:scale(1.04)}
+.proj-status,.proj-live{position:absolute;top:14px;z-index:2;display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;
+  font:500 11.5px var(--font-mono);color:var(--text);background:rgba(255,255,255,.88);border:1px solid var(--border);box-shadow:0 4px 14px -6px rgba(30,41,59,.25);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.proj-status{left:14px}
+.proj-status i{width:7px;height:7px;border-radius:50%;background:var(--pa);box-shadow:0 0 10px var(--pa)}
+.proj-live{right:14px;opacity:0;transform:translateY(-4px);transition:opacity .35s,transform .35s}
+.proj-live i{width:7px;height:7px;border-radius:50%;background:#FF5A5F;animation:dotpulse 1.6s infinite}
+.proj-media.live .proj-live{opacity:1;transform:none}
+.proj-status{transition:opacity .35s}
+.proj-media.live .proj-status{opacity:0}
+
+.proj-body{display:flex;flex-direction:column;gap:12px;padding:22px 24px 24px;flex:1}
+.proj-meta{display:flex;justify-content:space-between;align-items:center;font:500 12px var(--font-mono);color:var(--muted-2)}
+.proj-cat{color:var(--pa);color:var(--pa-text);letter-spacing:.12em;text-transform:uppercase;font-size:11px}
+.proj-title{margin:0;font:700 26px/1.15 var(--font-head);letter-spacing:-.02em}
+.proj-link{color:var(--text);background:linear-gradient(var(--pa),var(--pa)) 0 100%/0 2px no-repeat;transition:background-size .45s cubic-bezier(.2,.8,.2,1)}
+.proj-link:hover,.proj-card:hover .proj-link{color:var(--text);background-size:100% 2px}
+.proj-link:focus-visible{outline:none}
+/* The whole card is the link's hit area: .proj-body is left unpositioned so the
+   link's ::after stretches over .proj-tilt. */
+.proj-link::after{content:"";position:absolute;inset:0;z-index:5;border-radius:22px}
+.proj-tagline{margin:0;font-size:15.5px;color:var(--text);line-height:1.5}
+.proj-desc{margin:0;font-size:14px;line-height:1.6;color:var(--muted);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.proj-facts{display:flex;align-items:center;gap:18px;margin:4px 0 0;padding:14px 0 0;border-top:1px solid var(--border)}
+.proj-metrics{display:flex;gap:22px;margin:0;flex:none}
+.proj-metrics div{display:flex;flex-direction:column;gap:2px}
+.proj-feats{list-style:none;margin:0;padding:2px 0 2px 18px;border-left:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px 16px;min-width:0}
+.proj-metrics+.proj-feats{align-self:stretch;align-content:center}
+.proj-feats:first-child{padding-left:0;border-left:0}
+.proj-feats li{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--text-soft);white-space:nowrap}
+.proj-feats li::before{content:"";width:6px;height:6px;flex:none;border-radius:1.5px;transform:rotate(45deg);background:var(--pa);box-shadow:0 0 6px rgba(var(--pa-rgb),.6)}
+.proj-card:hover .proj-feats li{color:var(--text)}
+.proj-metrics dt{font:700 26px/1 var(--font-head);color:var(--pa);color:var(--pa-text);letter-spacing:-.02em}
+.proj-metrics dd{margin:0;font:500 11px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2)}
+.proj-stack{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:2px 0 0;padding:0}
+.proj-stack li{font:500 11.5px var(--font-mono);color:var(--muted);padding:4px 10px;border-radius:7px;border:1px solid var(--border);background:var(--card-2);transition:color .3s,border-color .3s}
+.proj-card:hover .proj-stack li{color:var(--text);border-color:rgba(var(--pa-rgb),.35)}
+.proj-cta{margin-top:auto;padding-top:8px;display:inline-flex;align-items:center;gap:8px;font:600 13.5px var(--font-mono);color:var(--pa);color:var(--pa-text)}
+.proj-cta svg{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.proj-card:hover .proj-cta svg{transform:translateX(5px)}
+
+@media (min-width:900px){
+  .proj-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+  .proj-card.is-featured{grid-column:1/-1}
+  .proj-card.is-featured .proj-tilt{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+  .proj-card.is-featured .proj-media{aspect-ratio:auto;height:100%;min-height:380px;border-radius:21px 0 0 21px}
+  .proj-card.is-featured .proj-cover::after{inset:0 0 0 auto;width:40%;height:auto;background:linear-gradient(to right,transparent,rgba(255,255,255,.7))}
+  .proj-card.is-featured .proj-body{padding:30px 32px 30px 28px}
+  .proj-card.is-featured .proj-title{font-size:32px}
+  .proj-card.is-featured .proj-desc{-webkit-line-clamp:5}
+}
+@media (hover:none){
+  .proj-card:hover .proj-tilt{animation:none}
+}
+
+/* ---------- Chat nudge popup ---------- */
+.chat-nudge{
+  position:fixed;right:24px;bottom:100px;z-index:198;
+  display:flex;align-items:flex-start;gap:10px;max-width:270px;cursor:pointer;
+  background:var(--card);border:1px solid rgba(var(--accent-rgb),.35);border-radius:14px;border-bottom-right-radius:4px;
+  padding:14px 16px;box-shadow:0 16px 40px -14px rgba(30,41,59,.35),0 0 0 1px rgba(var(--accent-rgb),.08);
+  font-size:14px;line-height:1.45;color:var(--text-soft);
+  opacity:0;transform:translateY(12px) scale(.96);pointer-events:none;
+  transition:opacity .35s cubic-bezier(.2,.8,.2,1),transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.chat-nudge.show{opacity:1;transform:none;pointer-events:auto}
+.chat-nudge::after{
+  content:"";position:absolute;right:22px;bottom:-7px;width:12px;height:12px;
+  background:var(--card);border-right:1px solid rgba(var(--accent-rgb),.35);border-bottom:1px solid rgba(var(--accent-rgb),.35);
+  transform:rotate(45deg);
+}
+.chat-nudge strong{color:var(--accent);font-weight:600}
+.nudge-close{
+  flex:none;order:2;margin:-4px -6px 0 0;width:24px;height:24px;cursor:pointer;
+  background:transparent;border:none;color:var(--muted-2);font-size:16px;line-height:1;border-radius:6px;
+}
+.nudge-close:hover{color:var(--text);background:rgba(30,41,59,.08)}
+@media (max-width:560px){.chat-nudge{right:16px;bottom:90px}}
+
+/* ---------- Scroll reveals (CSS-driven; .js set before first paint) ----------
+   Content is visible by default: no JS or prefers-reduced-motion = no hiding. */
+@media (prefers-reduced-motion:no-preference){
+  .js [data-reveal]{
+    opacity:0;transform:translateY(26px);
+    transition:opacity .65s ease var(--d,0s),transform .65s cubic-bezier(.2,.8,.2,1) var(--d,0s);
+  }
+  .js [data-reveal].in{opacity:1;transform:none}
+  .js [data-hero]{
+    opacity:0;transform:translateY(30px);
+    transition:opacity .8s ease var(--d,0s),transform .8s cubic-bezier(.2,.8,.2,1) var(--d,0s);
+  }
+  .js .hero.in [data-hero]{opacity:1;transform:none}
+  @keyframes popin{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+  .course-card.pop{animation:popin .38s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0s)}
+}
+
+/* ---------- Responsive ----------
+   Large displays: scale the whole layout up so the site matches the
+   viewer's resolution instead of floating small in the middle. */
+@media (min-width:1720px){html{zoom:1.18}}
+@media (min-width:2200px){html{zoom:1.45}}
+@media (min-width:3200px){html{zoom:1.9}}
+@media (max-width:1024px){
+  .courses-grid{grid-template-columns:repeat(2,1fr)}
+  .cap-grid{grid-template-columns:repeat(2,1fr)}
+  .stack-grid{grid-template-columns:repeat(2,1fr)}
+  .about-grid{grid-template-columns:1fr;gap:44px}
+}
+@media (max-width:900px){
+  .cpage-grid{grid-template-columns:1fr;gap:40px}
+  .cpage-cert{transform:none;max-width:560px}
+}
+@media (max-width:820px){
+  .nav-links{display:none}
+  .burger{display:block}
+  .featured-grid{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .section{padding:84px 0}
+}
+@media (max-width:560px){
+  .courses-grid{grid-template-columns:1fr}
+  .cap-grid{grid-template-columns:1fr}
+  .stack-grid{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .container{padding:0 20px}
+  .chat-panel{right:16px;bottom:92px}
+  .chat-fab{right:16px;bottom:16px}
+  .scroll-hint{display:none}
+}
+</style>
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="container nav-inner">
+    <a class="logo" href="./" aria-label="DanielC Portfolio, home page">
+      <span class="dc">DanielC</span><span class="dot">.</span><span class="pf">Portfolio</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="./#about">About</a>
+      <a href="./#projects">Projects</a>
+      <a href="./#credentials">Credentials</a>
+      <a href="./#skills">Skills</a>
+      <a href="./#contact" class="nav-cta">Get in touch</a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile">
+  <a href="./#about">About</a>
+  <a href="./#projects">Projects</a>
+  <a href="./#credentials">Credentials</a>
+  <a href="./#skills">Skills</a>
+  <a href="./#contact">Contact</a>
+</nav>
+
+<main id="top">
+<!-- ============ CERTIFICATE ============ -->
+<section class="cpage-hero">
+  <div class="hero-bg"><div class="hero-grid"></div><div class="orb orb-1"></div></div>
+  <div class="container cpage-grid">
+    <div class="cpage-text" data-reveal>
+      <a class="cpage-back" href="./#credentials">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        Back to portfolio</a>
+      <div class="section-kicker">IBM Skills Network · Aug 2026</div>
+      <h1 class="cpage-title">IBM RAG &amp; Agentic AI Professional Certificate</h1>
+      <p class="cpage-desc">Ten courses on retrieval-augmented generation and autonomous agents: retrieval pipelines over vector databases, multi-step reasoning with LangChain and LangGraph, multi-agent architectures in CrewAI, AutoGen and BeeAI, and tool access through MCP.</p>
+      <a class="btn btn-ghost" href="https://coursera.org/verify/RT4C10Z9PPED" target="_blank" rel="noopener">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+        Verify RT4C10Z9PPED
+      </a>
+    </div>
+    <div class="cpage-cert" data-reveal><img src="certs/ibm-cert.png" alt="IBM RAG and Agentic AI Professional Certificate"></div>
+  </div>
+</section>
+<!-- ============ COURSES ============ -->
+<section class="section" id="courses">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <div class="section-kicker">Coursework</div>
+      <h2 class="section-title">Nine certified courses,<br>one coherent stack.</h2>
+    </div>
+    <div class="filters" data-reveal role="group" aria-label="Filter courses">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="rag">RAG &amp; Retrieval</button>
+      <button class="filter-btn" data-filter="agents">Agentic AI</button>
+      <button class="filter-btn" data-filter="genai">GenAI &amp; Tools</button>
+    </div>
+    <div class="courses-grid" id="coursesGrid">
+      <article class="course-card" data-cat="genai" data-reveal>
+        <div class="course-img"><img src="certs/develop-genai.png" alt="Develop Generative AI Applications certificate" loading="lazy"></div>
+        <div class="course-body">
+          <span class="course-cat">GenAI &amp; Tools</span>
+          <h3 class="course-title">Develop Generative AI Applications</h3>
+          <div class="course-meta"><span>Apr 8, 2026</span><a href="https://coursera.org/verify/6957R7CTBQ8L" target="_blank" rel="noopener">6957R7CTBQ8L &#8599;</a></div>
+        </div>
+      </article>
+      <article class="course-card" data-cat="rag" data-reveal>
+        <div class="course-img"><img src="certs/build-rag.png" alt="Build RAG Applications certificate" loading="lazy"></div>
+        <div class="course-body">
+          <span class="course-cat">RAG &amp; Retrieval</span>
+          <h3 class="course-title">Build RAG Applications</h3>
+          <div class="course-meta"><span>Apr 16, 2026</span><a href="https://coursera.org/verify/KLGI2BQ5XCW3" target="_blank" rel="noopener">KLGI2BQ5XCW3 &#8599;</a></div>
+        </div>
+      </article>
+      <article class="course-card" data-cat="rag" data-reveal>
+        <div class="course-img"><img src="certs/vector-db.png" alt="Vector Databases for RAG certificate" loading="lazy"></div>
+        <div class="course-body">
+          <span class="course-cat">RAG &amp; Retrieval</span>
+          <h3 class="course-title">Vector Databases for RAG</h3>
+          <div class="course-meta"><span>Apr 21, 2026</span><a href="https://coursera.org/verify/6JFJTO1O844Y" target="_blank" rel="noopener">6JFJTO1O844Y &#8599;</a></div>
+        </div>
+      </article>
+      <article class="course-card" data-cat="rag" data-reveal>
+        <div class="course-img"><img src="certs/advanced-rag.png" alt="Advanced RAG with Vector Databases &amp; Retrievers certificate" loading="lazy"></div>
+        <div class="course-body">
+          <span class="course-cat">RAG &amp; Retrieval</span>
+          <h3 class="course-title">Advanced RAG with Vector Databases &amp; Retrievers</h3>
+          <div class="course-meta"><span>May 4, 2026</span><a href="https://coursera.org/verify/LNYDTW3UTZF5" target="_blank" rel="noopener">LNYDTW3UTZF5 &#8599;</a></div>
+        </div>
+      </article>
+      <article class="course-card" data-cat="genai" data-reveal>
+        <div class="course-img"><img src="certs/multimodal.png" alt="Build Multimodal Generative AI Applications certificate" loading="lazy"></div>
+        <div class="course-body">
+          <span class="course-cat">GenAI &amp; Tools</span>
+          <h3 class="course-title">Build Multimodal Generative AI Applications</h3>
+          <div class="course-meta"><span>May 11, 2026</span><a href="https://coursera.org/verify/DX6GNES9TKKB" target="_blank" rel="noopener">DX6GNES9TKKB &#8599;</a></div>
+        </div>
+      </article>
+      <article class="course-card" data-cat="agents" data-reveal>
+        <div class="course-img"><img src="certs/agent-fundamentals.png" alt="Fundamentals of Building AI Agents certificate" loading="lazy"></div>
+        <div class="course-body">
+          <span class="course-cat">Agentic AI</span>
+          <h3 class="course-title">Fundamentals of Building AI Agents</h3>
+          <div class="course-meta"><span>May 18, 2026</span><a href="https://coursera.org/verify/6QE81J6KXN0O" target="_blank" rel="noopener">6QE81J6KXN0O &#8599;</a></div>
+        </div>
+      </article>
+      <article class="course-card" data-cat="agents" data-reveal>
+        <div class="course-img"><img src="certs/langchain-langgraph.png" alt="Agentic AI with LangChain &amp; LangGraph certificate" loading="lazy"></div>
+        <div class="course-body">
+          <span class="course-cat">Agentic AI</span>
+          <h3 class="course-title">Agentic AI with LangChain &amp; LangGraph</h3>
+          <div class="course-meta"><span>May 25, 2026</span><a href="https://coursera.org/verify/MD2EC0CGX3WP" target="_blank" rel="noopener">MD2EC0CGX3WP &#8599;</a></div>
+        </div>
+      </article>
+      <article class="course-card" data-cat="agents" data-reveal>
+        <div class="course-img"><img src="certs/multiframework.png" alt="Agentic AI with LangGraph, CrewAI, AutoGen &amp; BeeAI certificate" loading="lazy"></div>
+        <div class="course-body">
+          <span class="course-cat">Agentic AI</span>
+          <h3 class="course-title">Agentic AI with LangGraph, CrewAI, AutoGen &amp; BeeAI</h3>
+          <div class="course-meta"><span>Jun 10, 2026</span><a href="https://coursera.org/verify/87PY5FGJOJ5C" target="_blank" rel="noopener">87PY5FGJOJ5C &#8599;</a></div>
+        </div>
+      </article>
+      <article class="course-card" data-cat="agents" data-reveal>
+        <div class="course-img"><img src="certs/mcp.png" alt="Build AI Agents using MCP certificate" loading="lazy"></div>
+        <div class="course-body">
+          <span class="course-cat">Agentic AI</span>
+          <h3 class="course-title">Build AI Agents using MCP</h3>
+          <div class="course-meta"><span>Jul 28, 2026</span><a href="https://coursera.org/verify/OYADP9GDQPDE" target="_blank" rel="noopener">OYADP9GDQPDE &#8599;</a></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <span class="copy">© 2026 Daniel Cruz · Built with an unreasonable attention to detail.</span>
+    <div class="footer-links">
+      <a href="mailto:danielcruzcastro30@gmail.com">Email</a>
+      <a href="https://linkedin.com/in/daniel-cruz-0bab18224" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://coursera.org/verify" target="_blank" rel="noopener">Verify</a>
+    </div>
+  </div>
+</footer>
+<!-- ============ CHAT WIDGET ============ -->
+<div class="chat-panel" id="chatPanel" role="dialog" aria-label="Daniel&#x27;s Assistant" aria-hidden="true">
+  <div class="chat-header">
+    <div class="chat-avatar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><rect width="16" height="12" x="4" y="8" rx="3"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M9 12.5v2"/><path d="M15 12.5v2"/></svg>
+    </div>
+    <div>
+      <div class="chat-name">Daniel&#x27;s Assistant</div>
+      <div class="chat-status">online - AI powered ✨</div>
+    </div>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="msg bot">Hi! I answer questions about Daniel&#x27;s credentials, experience and stack. Everything comes straight from this portfolio.</div>
+    <div class="chat-suggestions" id="chatSuggestions">
+      <span class="sug-label">Try asking</span>
+    </div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chatInput" type="text" placeholder="Type a question&#8230;" aria-label="Type a question">
+    <button class="chat-send" id="chatSend" aria-label="Send message">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+    </button>
+  </div>
+</div>
+<div class="chat-nudge" id="chatNudge" role="status">
+  <span>Have any questions? <strong>Ask my AI assistant</strong></span>
+  <button class="nudge-close" id="nudgeClose" aria-label="Dismiss">&#10005;</button>
+</div>
+<button class="chat-fab" id="chatFab" aria-label="Open AI assistant" aria-expanded="false" title="Ask Daniel&#x27;s Assistant">
+  <svg class="icon-chat" width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><rect width="16" height="12" x="4" y="8" rx="3"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M9 12.5v2"/><path d="M15 12.5v2"/></svg>
+  <svg class="icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+</button>
+
+<script>
+(function () {
+  'use strict';
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Nav: background on scroll + active link ---- */
+  var nav = document.getElementById('nav');
+  var navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+  // Every section the nav links to, in page order. Derived from the nav itself,
+  // so a new section in content.py highlights its link with no change here.
+  var sections = Array.prototype.map.call(navLinks, function (a) {
+    return document.querySelector(a.getAttribute('href'));
+  }).filter(function (s, i, all) { return s && all.indexOf(s) === i; })
+    .sort(function (a, b) { return a.offsetTop - b.offsetTop; });
+  function onScroll() {
+    nav.classList.toggle('scrolled', window.scrollY > 24);
+    var pos = window.scrollY + window.innerHeight * 0.35;
+    var current = '';
+    sections.forEach(function (s) { if (s && s.offsetTop <= pos) current = s.id; });
+    navLinks.forEach(function (a) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---- Mobile menu ---- */
+  var burger = document.getElementById('burger');
+  var mobileMenu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', function () {
+    var open = mobileMenu.classList.toggle('open');
+    burger.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', open);
+  });
+  mobileMenu.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () {
+      mobileMenu.classList.remove('open');
+      burger.classList.remove('open');
+      burger.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  /* ---- Marquee: duplicate track for seamless loop ---- */
+  // (The home page has the marquee and hero; the courses page has neither.)
+  var track = document.getElementById('marqueeTrack');
+  if (track) track.innerHTML += track.innerHTML;
+
+  /* ---- Hero entrance: staggered via transition-delay ---- */
+  var hero = document.querySelector('.hero');
+  document.querySelectorAll('[data-hero]').forEach(function (el, i) {
+    el.style.setProperty('--d', (0.1 + i * 0.12).toFixed(2) + 's');
+  });
+  if (hero) {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { hero.classList.add('in'); });
+    });
+    // Safety: if rAF is throttled (background tab), force the end state.
+    setTimeout(function () { hero.classList.add('in'); }, 400);
+  }
+
+  /* ---- Scroll reveals: IntersectionObserver + CSS transitions ---- */
+  var revealEls = document.querySelectorAll('[data-reveal]');
+  if ('IntersectionObserver' in window) {
+    var pending = [];
+    var flushTimer = null;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        io.unobserve(entry.target);
+        pending.push(entry.target);
+      });
+      // Batch entries arriving together so siblings stagger naturally.
+      if (pending.length && !flushTimer) {
+        flushTimer = setTimeout(function () {
+          pending.forEach(function (el, i) {
+            el.style.setProperty('--d', Math.min(i * 0.08, 0.5).toFixed(2) + 's');
+            el.classList.add('in');
+          });
+          pending = [];
+          flushTimer = null;
+        }, 40);
+      }
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* ---- Stat counters (time-based, snaps to final value) ---- */
+  function runCounter(el) {
+    var target = parseInt(el.getAttribute('data-count'), 10);
+    if (reduceMotion) { el.textContent = target; return; }
+    var t0 = performance.now(), dur = 1400;
+    function tick(now) {
+      var p = Math.min((now - t0) / dur, 1);
+      el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+    setTimeout(function () { el.textContent = target; }, dur + 200);
+  }
+  document.querySelectorAll('[data-count]').forEach(function (el) {
+    setTimeout(function () { runCounter(el); }, 700);
+  });
+
+  /* ---- Parallax orbs on scroll ---- */
+  var orb1 = document.querySelector('[data-orb="1"]');
+  var orb2 = document.querySelector('[data-orb="2"]');
+  if (!reduceMotion && orb1 && orb2) {
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        var y = window.scrollY;
+        if (y < window.innerHeight * 1.4) {
+          orb1.style.transform = 'translateY(' + y * 0.18 + 'px)';
+          orb2.style.transform = 'translateY(' + y * -0.14 + 'px)';
+        }
+        ticking = false;
+      });
+    }, { passive: true });
+  }
+
+  /* ---- Capability cards: cursor glow ---- */
+  document.querySelectorAll('.cap-card').forEach(function (card) {
+    card.addEventListener('pointermove', function (e) {
+      var r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  /* ---- Projects: edge light, tilt, live previews, filters ---- */
+  var projGrid = document.getElementById('projGrid');
+  if (projGrid) {
+    var projCards = Array.prototype.slice.call(projGrid.querySelectorAll('.proj-card'));
+    var canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    // The edge light is one cursor shared by every card: each card's border
+    // glows where it's closest to the pointer, so it sweeps across the grid.
+    var edgeFrame = null, lastPt = null;
+    function paintEdges() {
+      edgeFrame = null;
+      projCards.forEach(function (card) {
+        var t = card.firstElementChild, r = t.getBoundingClientRect();
+        t.style.setProperty('--gx', lastPt ? (lastPt.x - r.left) + 'px' : '-999px');
+        t.style.setProperty('--gy', lastPt ? (lastPt.y - r.top) + 'px' : '-999px');
+      });
+    }
+    if (canHover) {
+      projGrid.addEventListener('pointermove', function (e) {
+        lastPt = { x: e.clientX, y: e.clientY };
+        if (!edgeFrame) edgeFrame = requestAnimationFrame(paintEdges);
+      });
+      projGrid.addEventListener('pointerleave', function () {
+        lastPt = null;
+        if (!edgeFrame) edgeFrame = requestAnimationFrame(paintEdges);
+      });
+    }
+
+    // Live preview: hovering a card loads the project's own page into a scaled
+    // iframe. One at a time, removed on leave, so ten cards cost one iframe.
+    var FRAME_W = 1280, FRAME_H = 800, openMedia = null;
+    function sizeFrame(media, frame) {
+      var w = media.clientWidth, h = media.clientHeight, s = Math.max(w / FRAME_W, h / FRAME_H);
+      frame.style.transform = 'translate(' + (w - FRAME_W * s) / 2 + 'px,' + (h - FRAME_H * s) / 2 + 'px) scale(' + s + ')';
+    }
+    function openPreview(media) {
+      clearTimeout(media._rm);
+      if (openMedia && openMedia !== media) closePreview(openMedia, true);
+      openMedia = media;
+      var frame = media.querySelector('.proj-frame');
+      if (frame) { if (frame._ready) media.classList.add('live'); return; }
+      frame = document.createElement('iframe');
+      frame.className = 'proj-frame';
+      frame.src = media.getAttribute('data-preview');
+      frame.title = '';
+      frame.tabIndex = -1;
+      frame.setAttribute('aria-hidden', 'true');
+      frame.setAttribute('scrolling', 'no');
+      frame.addEventListener('load', function () {
+        frame._ready = true;
+        if (openMedia === media) media.classList.add('live');
+      });
+      sizeFrame(media, frame);
+      media.appendChild(frame);
+    }
+    function closePreview(media, now) {
+      media.classList.remove('live');
+      if (openMedia === media) openMedia = null;
+      clearTimeout(media._rm);
+      media._rm = setTimeout(function () {
+        var f = media.querySelector('.proj-frame');
+        if (f && openMedia !== media) f.remove();
+      }, now ? 0 : 500);
+    }
+    window.addEventListener('resize', function () {
+      if (!openMedia) return;
+      var f = openMedia.querySelector('.proj-frame');
+      if (f) sizeFrame(openMedia, f);
+    });
+
+    projCards.forEach(function (card) {
+      var tilt = card.firstElementChild;
+      var media = card.querySelector('.proj-media');
+      var hoverTimer = null;
+      if (!canHover) return;
+      card.addEventListener('pointermove', function (e) {
+        var r = tilt.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+        tilt.style.setProperty('--mx', (x * 100).toFixed(1) + '%');
+        tilt.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+        if (reduceMotion) return;
+        var k = 6 * Math.min(1, 420 / r.width);   // wide cards tilt less
+        tilt.style.setProperty('--ry', ((x - 0.5) * k).toFixed(2) + 'deg');
+        tilt.style.setProperty('--rx', ((0.5 - y) * k).toFixed(2) + 'deg');
+      });
+      card.addEventListener('pointerenter', function () {
+        hoverTimer = setTimeout(function () { openPreview(media); }, 320);
+      });
+      card.addEventListener('pointerleave', function () {
+        clearTimeout(hoverTimer);
+        tilt.style.setProperty('--rx', '0deg');
+        tilt.style.setProperty('--ry', '0deg');
+        closePreview(media);
+      });
+    });
+
+    // Filters (shown once there are enough projects). Cards glide to their new
+    // spots with a FLIP animation; Web Animations override the reveal transform.
+    var projFilters = document.querySelectorAll('.proj-filter');
+    projFilters.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        projFilters.forEach(function (b) { b.classList.toggle('active', b === btn); });
+        var f = btn.getAttribute('data-filter');
+        var before = new Map();
+        projCards.forEach(function (c) { if (!c.hidden) before.set(c, c.getBoundingClientRect()); });
+        projCards.forEach(function (c) { c.hidden = !(f === 'all' || c.getAttribute('data-cat') === f); });
+        if (reduceMotion || !projCards[0].animate) return;
+        var entering = 0;
+        projCards.forEach(function (c) {
+          if (c.hidden) return;
+          var last = c.getBoundingClientRect(), first = before.get(c);
+          if (first) {
+            var dx = first.left - last.left, dy = first.top - last.top;
+            var sx = first.width / last.width, sy = first.height / last.height;
+            if (Math.abs(dx) + Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) return;
+            c.animate([
+              { transformOrigin: '0 0', transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ')' },
+              { transformOrigin: '0 0', transform: 'none' }
+            ], { duration: 560, easing: 'cubic-bezier(.2,.8,.2,1)' });
+          } else {
+            c.animate([
+              { opacity: 0, transform: 'translateY(22px) scale(.96)' },
+              { opacity: 1, transform: 'none' }
+            ], { duration: 520, delay: entering++ * 60, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+          }
+        });
+      });
+    });
+  }
+
+  /* ---- Course filters ---- */
+  var filterBtns = document.querySelectorAll('.filter-btn');
+  var courseCards = document.querySelectorAll('.course-card');
+  filterBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      filterBtns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var f = btn.getAttribute('data-filter');
+      var shown = [];
+      courseCards.forEach(function (card) {
+        card.classList.remove('pop');
+        var show = f === 'all' || card.getAttribute('data-cat') === f;
+        card.classList.toggle('hidden', !show);
+        if (show) shown.push(card);
+      });
+      requestAnimationFrame(function () {
+        shown.forEach(function (card, i) {
+          card.style.setProperty('--d', (i * 0.05).toFixed(2) + 's');
+          card.classList.add('pop');
+        });
+      });
+    });
+  });
+})();
+</script>
+<script type="module">
+/* ============ AI chat assistant ============ */
+// System prompt + starter questions live in assistant-config.js.
+// The backend is a Supabase Edge Function that holds the OpenRouter key
+// and enforces the per-visitor daily limit (supabase/functions/chat/index.ts).
+const CHAT_URL = 'https://kfhcaphutihlhuaalzjk.supabase.co/functions/v1/chat';
+
+let profile = '';
+let suggestions = ["What is Daniel's tech stack", "Which agent frameworks has he worked with?", "How does the cybersecurity certificate apply to AI work?"];
+try {
+  const cfg = await import('./assistant-config.js');
+  profile = cfg.profile;
+  suggestions = cfg.suggestions;
+} catch (e) { /* fall back to defaults above; backend still validates */ }
+
+const fab = document.getElementById('chatFab');
+const panel = document.getElementById('chatPanel');
+const body = document.getElementById('chatBody');
+const input = document.getElementById('chatInput');
+const sendBtn = document.getElementById('chatSend');
+const sugWrap = document.getElementById('chatSuggestions');
+
+const messages = [];
+let busy = false;
+
+suggestions.forEach(text => {
+  const b = document.createElement('button');
+  b.className = 'sug-btn';
+  b.type = 'button';
+  b.textContent = text;
+  b.addEventListener('click', () => send(text));
+  sugWrap.appendChild(b);
+});
+
+/* Nudge popup: invites visitors to try the assistant. Shows once per
+   session after a short delay; goes away on dismiss or when chat opens. */
+const nudge = document.getElementById('chatNudge');
+const nudgeClose = document.getElementById('nudgeClose');
+let nudgeSeen = false;
+try { nudgeSeen = sessionStorage.getItem('nudge-seen') === '1'; } catch (e) {}
+function hideNudge() {
+  nudge.classList.remove('show');
+  try { sessionStorage.setItem('nudge-seen', '1'); } catch (e) {}
+}
+if (!nudgeSeen) {
+  setTimeout(() => {
+    if (!panel.classList.contains('open')) nudge.classList.add('show');
+  }, 3500);
+  setTimeout(hideNudge, 18000);
+}
+nudgeClose.addEventListener('click', e => { e.stopPropagation(); hideNudge(); });
+nudge.addEventListener('click', () => { hideNudge(); if (!panel.classList.contains('open')) toggle(); });
+
+function toggle() {
+  const open = !panel.classList.contains('open');
+  panel.classList.toggle('open', open);
+  fab.classList.toggle('open', open);
+  fab.setAttribute('aria-expanded', open);
+  panel.setAttribute('aria-hidden', !open);
+  if (open) { hideNudge(); setTimeout(() => input.focus(), 250); }
+}
+fab.addEventListener('click', toggle);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && panel.classList.contains('open')) toggle();
+});
+
+function addMsg(role, text) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  return div;
+}
+
+async function send(preset) {
+  const q = (typeof preset === 'string' ? preset : input.value).trim();
+  if (!q || busy) return;
+  busy = true;
+  sendBtn.disabled = true;
+  input.value = '';
+  if (sugWrap) sugWrap.remove();
+  addMsg('user', q);
+  messages.push({ role: 'user', content: q });
+
+  const typing = document.createElement('div');
+  typing.className = 'msg bot typing';
+  typing.innerHTML = '<i></i><i></i><i></i>';
+  body.appendChild(typing);
+  body.scrollTop = body.scrollHeight;
+
+  try {
+    const res = await fetch(CHAT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: profile, messages })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok && !data.reply) throw new Error(data.error || res.status);
+    typing.remove();
+    addMsg('bot', data.reply);
+    messages.push({ role: 'assistant', content: data.reply });
+  } catch (err) {
+    typing.remove();
+    addMsg('bot', 'Something went wrong reaching the model. Try again in a moment.');
+  }
+  busy = false;
+  sendBtn.disabled = false;
+}
+sendBtn.addEventListener('click', () => send());
+input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+</script>
+</body>
+</html>

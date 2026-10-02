@@ -32,8 +32,10 @@ install.
 | `build.py` | Turns `content.py` into the site. Rarely needs changing. |
 | `templates/page.html` | The design: all CSS and browser JavaScript. Edit to change how it *looks*. |
 | `index.html` | **Generated. Do not edit** — `build.py` overwrites it. |
+| `ibm-courses.html` | **Generated. Do not edit** — the courses page, opened from the IBM certificate card. |
 | `assistant-config.js` | **Generated. Do not edit** — change `ASSISTANT` in `content.py`. |
 | `certs/` | Certificate images shown on the page. |
+| `Projects/` | One page per project, plus their images in `Projects/assets/`. |
 | `supabase/functions/chat/` | The chatbot backend that holds the OpenRouter API key. |
 | `.gitattributes` | Pins line endings so rebuilds don't show phantom changes. |
 
@@ -52,7 +54,34 @@ block, paste it below, and change the values:
 },
 ```
 
-Drop the image into `certs/`, then run `python build.py`.
+Drop the image into `certs/`, then run `python build.py`. Courses appear on
+`ibm-courses.html`, the page the IBM certificate card opens (its `"link"` in
+`CREDENTIALS`); `COURSES_PAGE` sets that page's title and file name.
+
+**Add a project.** Put the project's page in `Projects/` (any self-contained
+HTML file; images go in `Projects/assets/`). Then in `content.py`, find `PROJECTS`,
+copy a block and change the values:
+
+```python
+{
+    "title": "Finance Advisor",
+    "tagline": "One line that says what it does.",
+    "description": "Two or three sentences on how it works.",
+    "page": "Projects/Finance Advisor.html",   # spaces in file names are fine
+    "accent": "#E0A458",                       # the card's glow color
+    "category": "AI agents",                   # groups cards for the filters
+    "status": "Working prototype",
+    "year": "2026",
+    "stack": ["Python", "LangGraph"],
+},
+```
+
+Optional: `"icon"` (an image for the card cover; without one it shows the
+initials), `"metrics"` (up to three `("8", "widgets")` pairs), `"features"`
+(short feature names listed beside the metrics), `"preview"`
+(a different URL for the hover preview) and `"featured": True` (a full-width card).
+Filter buttons appear on their own once there are 3+ projects in 2+ categories.
+The chatbot learns about every project automatically on the next build.
 
 **Change what the chatbot knows.** Edit `ASSISTANT["prompt"]` in `content.py`,
 then rebuild. Write plain prose; quotes and apostrophes are safe to type.
@@ -61,7 +90,9 @@ then rebuild. Write plain prose; quotes and apostrophes are safe to type.
 and `ABOUT` entries near the top of `content.py`.
 
 **Change colors, fonts, or animations.** Those live in the `<style>` block in
-`templates/page.html`.
+`templates/page.html`. The palette is the `:root` block at the top; `--accent`
+and `--accent-rgb` together recolor every glow. Each project page in `Projects/`
+has its own palette in its own `:root` block.
 
 **Change the chatbot's model or daily limit.** The three constants at the top of
 `supabase/functions/chat/index.ts`. That function must be redeployed afterwards:
@@ -80,16 +111,16 @@ page. The two usual causes:
 - **`course ... has category 'x', which is not one of the COURSE_FILTERS keys`** —
   a course's `category` must match one of the `key` values in `COURSE_FILTERS`.
 
-Nothing is written to `index.html` when the build fails, so the live site is
-never left half-updated.
+Nothing is written when the build fails, so the live site is never left
+half-updated.
 
 ## Publishing setup
 
 GitHub Pages serves the repository root of the `main` branch. Settings → Pages →
 Source: "Deploy from a branch" → `main` → `/ (root)`.
 
-Because Pages serves the committed files directly, **the generated `index.html`
-and `assistant-config.js` must be committed** — they are build output, but they
+Because Pages serves the committed files directly, **the generated `index.html`,
+`ibm-courses.html` and `assistant-config.js` must be committed** — they are build output, but they
 are also what visitors load.
 
 ## API key safety

@@ -45,8 +45,13 @@ counters and a scrolling marquee, driven by `IntersectionObserver` and CSS
 transitions. Content is visible by default, so it still reads correctly with
 JavaScript disabled or `prefers-reduced-motion` set.
 
-**Filterable credential gallery.** Nine course certificates, filterable by
-discipline, each linking to its Coursera verification page.
+**Project showcase.** Each project card opens an interactive demo page, and
+hovering a card plays a live miniature of that page inside it. Cards take their
+colors from the project, and the grid scales from two projects to many.
+
+**Filterable credential gallery.** The IBM certificate card opens its own page
+with the nine course certificates behind it, filterable by discipline, each
+linking to its Coursera verification page.
 
 **Responsive across resolutions.** Fluid type and layout from 375 px phones up
 to 4K displays, where the whole layout scales rather than stranding the content
@@ -59,14 +64,14 @@ publish a broken page.
 ## How it works
 
 ```
-content.py ──┐
-             ├──► build.py ──► index.html + assistant-config.js ──► GitHub Pages
-templates/ ──┘                                                          │
-                                                                        ▼
-                                                  chat widget ──► Supabase Edge Function
-                                                                        │
-                                                                        ▼
-                                                                   OpenRouter
+content.py ──┐                  index.html
+             ├──► build.py ──►  ibm-courses.html     ──► GitHub Pages
+templates/ ──┘                  assistant-config.js           │
+                                                              ▼
+                                        chat widget ──► Supabase Edge Function
+                                                              │
+                                                              ▼
+                                                         OpenRouter
 ```
 
 `content.py` holds the data. `templates/page.html` holds the design — all CSS
