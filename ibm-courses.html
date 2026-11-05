@@ -554,6 +554,17 @@ footer{border-top:1px solid var(--border);padding:34px 0}
   .proj-card:hover .proj-tilt{animation:none}
 }
 
+/* ---------- "Email copied" notice ---------- */
+.toast{
+  position:fixed;left:50%;bottom:28px;z-index:300;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 32px);
+  padding:12px 18px;border-radius:12px;background:var(--navy);color:#FAF7F2;font-size:14px;line-height:1.4;
+  box-shadow:0 18px 40px -14px rgba(30,41,59,.55);
+  opacity:0;transform:translate(-50%,12px);pointer-events:none;transition:opacity .3s,transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast svg{flex:none;color:var(--sage)}
+.toast b{color:var(--beige);font-weight:600}
+
 /* ---------- Chat nudge popup ---------- */
 .chat-nudge{
   position:fixed;right:24px;bottom:100px;z-index:198;
@@ -1073,6 +1084,47 @@ footer{border-top:1px solid var(--border);padding:34px 0}
       });
     });
   }
+
+  /* ---- Email links: also copy the address ----
+     A mailto: link only works when the visitor's computer has a default
+     email app; without one the click silently does nothing. So every email
+     link also copies the address and says so. The mailto: still fires for
+     visitors who do have an email app. */
+  var toast = null, toastTimer = null;
+  function showToast(html) {
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.setAttribute('role', 'status');
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = html;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 4000);
+  }
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy') ? resolve() : reject(); } catch (e) { reject(e); }
+      ta.remove();
+    });
+  }
+  document.querySelectorAll('a[href^="mailto:"]').forEach(function (a) {
+    a.addEventListener('click', function () {
+      var address = decodeURIComponent(a.getAttribute('href').slice(7).split('?')[0]);
+      var safe = address.replace(/[&<>"]/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; });
+      var check = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+      copyText(address).then(function () {
+        showToast(check + '<span>Email copied: <b>' + safe + '</b></span>');
+      }, function () {
+        showToast('<span>Email me at <b>' + safe + '</b></span>');
+      });
+    });
+  });
 
   /* ---- Course filters ---- */
   var filterBtns = document.querySelectorAll('.filter-btn');
